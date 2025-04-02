@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "titulo": "Curso de Inteligência Emocional",
+    "descricao": "Aprenda a lidar com suas emoções e desenvolver autocontrole.",
+    "tipo": "video",
+    "link": "https://meusite.com/videos/inteligencia-emocional.mp4"
+  },
+  {
+    "id": 2,
+    "titulo": "E-book: Finanças Pessoais",
+    "descricao": "Guia prático para organizar suas finanças.",
+    "tipo": "pdf",
+    "link": "https://meusite.com/pdf/financas-pessoais.pdf"
+  }
+]
