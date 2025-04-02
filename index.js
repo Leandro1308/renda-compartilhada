@@ -1,2 +1,2 @@
 // Arquivo redirecionador na raiz
-require('./marketing-multinivel/index.js');
+require("./marketing-multinivel/index.js");
