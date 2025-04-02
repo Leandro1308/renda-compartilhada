@@ -10,6 +10,8 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
 const USUARIOS_PATH = "./marketing-multinivel/usuarios.json";
+const CURSOS_PATH = "./marketing-multinivel/cursos.json";
+const SEGREDO_JWT = "segredo";
 
 // Página inicial
 app.get("/", (req, res) => {
@@ -57,11 +59,31 @@ app.post("/login", (req, res) => {
     return res.status(401).json({ erro: "E-mail ou senha inválidos." });
   }
 
-  const token = jwt.sign({ id: usuario.id, nome: usuario.nome }, "segredo", {
+  const token = jwt.sign({ id: usuario.id, nome: usuario.nome }, SEGREDO_JWT, {
     expiresIn: "2h",
   });
 
   res.json({ mensagem: "Login bem-sucedido!", token });
+});
+
+// Middleware de autenticação
+function autenticarToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) return res.status(401).json({ erro: "Token não fornecido." });
+
+  jwt.verify(token, SEGREDO_JWT, (err, usuario) => {
+    if (err) return res.status(403).json({ erro: "Token inválido ou expirado." });
+    req.usuario = usuario;
+    next();
+  });
+}
+
+// Rota protegida: acesso aos cursos
+app.get("/cursos", autenticarToken, (req, res) => {
+  const cursos = JSON.parse(fs.readFileSync(CURSOS_PATH));
+  res.json(cursos);
 });
 
 app.listen(PORT, () => {
