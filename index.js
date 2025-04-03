@@ -1,3 +1,4 @@
-// Redireciona para o arquivo principal dentro da pasta marketing-multinivel
 const path = require("path");
+
+// Caminho correto e absoluto para rodar tanto local quanto no Railway
 require(path.join(__dirname, "marketing-multinivel", "index.js"));
