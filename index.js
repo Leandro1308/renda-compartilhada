@@ -1,4 +1,4 @@
 const path = require("path");
 
-// Caminho relativo ao diretório atual (corrige o erro no Railway)
-require("./marketing-multinivel/index.js");
+// Garante que o caminho funcione tanto local quanto no Railway
+require(path.join(__dirname, "marketing-multinivel", "index.js"));
