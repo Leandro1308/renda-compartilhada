@@ -1,29 +1,28 @@
 const express = require("express");
 const fs = require("fs");
+const path = require("path");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-app.use(bodyParser.json());
-
-// Permitir que arquivos estáticos sejam acessados da pasta "public"
-app.use(express.static(path.join(__dirname, "..", "public")));
+const SEGREDO_JWT = "segredo"; // Substituir futuramente por variável de ambiente
 
 // Caminhos para os arquivos JSON
-const USUARIOS_PATH = "./marketing-multinivel/usuarios.json";
-const CURSOS_PATH = "./marketing-multinivel/cursos.json";
-const SEGREDO_JWT = "segredo";
+const USUARIOS_PATH = path.join(__dirname, "usuarios.json");
+const CURSOS_PATH = path.join(__dirname, "cursos.json");
 
-// Rota principal - carrega a interface do sistema (index.html)
+// Middlewares
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "..", "public"))); // arquivos da pasta /public
+
+// Rota principal - Página inicial
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
-// Rota de cadastro
+// Rota de cadastro de usuário
 app.post("/cadastro", (req, res) => {
   const { nome, email, senha } = req.body;
 
@@ -31,7 +30,10 @@ app.post("/cadastro", (req, res) => {
     return res.status(400).json({ erro: "Nome, e-mail e senha são obrigatórios." });
   }
 
-  const usuarios = JSON.parse(fs.readFileSync(USUARIOS_PATH));
+  let usuarios = [];
+  if (fs.existsSync(USUARIOS_PATH)) {
+    usuarios = JSON.parse(fs.readFileSync(USUARIOS_PATH));
+  }
 
   const usuarioExiste = usuarios.find((u) => u.email === email);
   if (usuarioExiste) {
@@ -55,5 +57,5 @@ app.post("/cadastro", (req, res) => {
 
 // Inicia o servidor
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
