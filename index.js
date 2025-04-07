@@ -81,3 +81,45 @@ app.post("/login", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
+// Painel do usuário logado
+app.get("/painel", (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ erro: "Token não fornecido." });
+  }
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, SEGREDO_JWT);
+    const { id, email } = decoded;
+
+    if (!fs.existsSync(USUARIOS_PATH)) {
+      return res.status(500).json({ erro: "Arquivo de usuários não encontrado." });
+    }
+
+    const dados = fs.readFileSync(USUARIOS_PATH);
+    const usuarios = JSON.parse(dados);
+
+    const usuario = usuarios.find(u => u.id === id && u.email === email);
+    if (!usuario) {
+      return res.status(404).json({ erro: "Usuário não encontrado." });
+    }
+
+    // Pegando os indicados por esse usuário
+    const indicadosDiretos = usuarios.filter(u => u.indicadoPor === usuario.email);
+
+    // Cálculo de ganhos simples (40% por direto)
+    const ganhos = indicadosDiretos.length * 20; // R$20,00 (40% de R$50)
+
+    const resposta = {
+      nome: usuario.nome,
+      email: usuario.email,
+      indicados: indicadosDiretos.map(u => u.email),
+      ganhos
+    };
+
+    res.json(resposta);
+  } catch (err) {
+    res.status(401).json({ erro: "Token inválido." });
+  }
+});
