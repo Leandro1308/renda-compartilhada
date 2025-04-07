@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel do Usuário</title>
+</head>
+<body>
+  <h1>Painel do Usuário</h1>
+  <div id="dadosUsuario">
+    <p>Carregando dados...</p>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Você precisa estar logado.");
+      window.location.href = "/login.html";
+    }
+
+    fetch("/painel", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      const div = document.getElementById("dadosUsuario");
+      if (data.erro) {
+        div.innerHTML = `<p style="color:red">${data.erro}</p>`;
+      } else {
+        const listaIndicados = data.indicados.map(i => `<li>${i}</li>`).join("");
+        div.innerHTML = `
+          <p><strong>Nome:</strong> ${data.nome}</p>
+          <p><strong>Email:</strong> ${data.email}</p>
+          <p><strong>Indicados:</strong></p>
+          <ul>${listaIndicados}</ul>
+          <p><strong>Ganhos:</strong> R$ ${data.ganhos.toFixed(2)}</p>
+        `;
+      }
+    })
+    .catch(() => {
+      document.getElementById("dadosUsuario").innerHTML = "<p style='color:red'>Erro ao carregar painel.</p>";
+    });
+  </script>
+</body>
+</html>
