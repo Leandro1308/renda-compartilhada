@@ -2,46 +2,40 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cadastro - Renda Compartilhada</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cadastro</title>
 </head>
 <body>
-  <h1>Cadastro de Afiliado</h1>
+  <h1>Cadastro de Usuário</h1>
   <form id="formCadastro">
-    <label>Nome:</label><br />
-    <input type="text" id="nome" required /><br /><br />
-
-    <label>Email:</label><br />
-    <input type="email" id="email" required /><br /><br />
-
-    <label>Senha:</label><br />
-    <input type="password" id="senha" required /><br /><br />
-
+    <label>Nome: <input type="text" id="nome" required /></label><br />
+    <label>Email: <input type="email" id="email" required /></label><br />
+    <label>Senha: <input type="password" id="senha" required /></label><br />
+    <label>Indicado por (opcional): <input type="text" id="indicadoPor" /></label><br />
     <button type="submit">Cadastrar</button>
   </form>
 
-  <p id="mensagem"></p>
+  <p id="resposta"></p>
 
   <script>
-    document.getElementById("formCadastro").addEventListener("submit", async function (e) {
+    const form = document.getElementById('formCadastro');
+    const resposta = document.getElementById('resposta');
+
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const nome = document.getElementById('nome').value;
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+      const indicadoPor = document.getElementById('indicadoPor').value;
 
-      const nome = document.getElementById("nome").value;
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const ref = urlParams.get("ref");
-      const url = ref ? `/cadastro?ref=${ref}` : "/cadastro";
-
-      const resposta = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, email, senha })
+      const res = await fetch('/cadastro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email, senha, indicadoPor }),
       });
 
-      const dados = await resposta.json();
-      document.getElementById("mensagem").innerText = dados.mensagem || dados.erro;
+      const data = await res.json();
+      resposta.textContent = data.mensagem || data.erro;
     });
   </script>
 </body>
