@@ -9,31 +9,34 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SEGREDO_JWT = "segredo";
 
-// Caminhos para os arquivos JSON
-const USUARIOS_PATH = path.join(__dirname, "marketing-multinivel", "usuarios.json");
-const CURSOS_PATH = path.join(__dirname, "marketing-multinivel", "cursos.json");
+const USUARIOS_PATH = path.join(__dirname, "usuarios.json");
+const CURSOS_PATH = path.join(__dirname, "cursos.json");
 
-// Middlewares
+// Middleware
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public"))); // <-- Correção aqui
+app.use(express.static(path.join(__dirname, "public"))); // serve arquivos HTML
 
-// Rota principal
+// Rota principal (opcional)
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.send("API Renda Compartilhada está no ar!");
 });
 
-// Rota de cadastro
+// Cadastro de usuário
 app.post("/cadastro", (req, res) => {
-  const { nome, email, senha, indicador } = req.body;
+  const { nome, email, senha, indicadoPor } = req.body;
 
   if (!nome || !email || !senha) {
-    return res.status(400).json({ erro: "Nome, e-mail e senha são obrigatórios." });
+    return res.status(400).json({ erro: "Preencha todos os campos." });
   }
 
-  const usuarios = JSON.parse(fs.readFileSync(USUARIOS_PATH));
+  let usuarios = [];
+  if (fs.existsSync(USUARIOS_PATH)) {
+    const dados = fs.readFileSync(USUARIOS_PATH);
+    usuarios = JSON.parse(dados);
+  }
 
-  const usuarioExiste = usuarios.find((u) => u.email === email);
-  if (usuarioExiste) {
+  const emailJaCadastrado = usuarios.find((u) => u.email === email);
+  if (emailJaCadastrado) {
     return res.status(400).json({ erro: "E-mail já cadastrado." });
   }
 
@@ -44,43 +47,37 @@ app.post("/cadastro", (req, res) => {
     nome,
     email,
     senha: senhaCriptografada,
-    indicador: indicador || null,
+    indicadoPor: indicadoPor || null,
+    indicados: [],
+    dataCadastro: new Date().toISOString(),
   };
 
   usuarios.push(novoUsuario);
   fs.writeFileSync(USUARIOS_PATH, JSON.stringify(usuarios, null, 2));
 
-  res.status(201).json({ mensagem: "Usuário cadastrado com sucesso!" });
+  res.status(201).json({ mensagem: "Usuário cadastrado com sucesso." });
 });
 
-// Rota de login
+// Login
 app.post("/login", (req, res) => {
   const { email, senha } = req.body;
 
-  if (!email || !senha) {
-    return res.status(400).json({ erro: "E-mail e senha são obrigatórios." });
-  }
-
-  const usuarios = JSON.parse(fs.readFileSync(USUARIOS_PATH));
+  const dados = fs.readFileSync(USUARIOS_PATH);
+  const usuarios = JSON.parse(dados);
 
   const usuario = usuarios.find((u) => u.email === email);
-  if (!usuario) {
-    return res.status(401).json({ erro: "Usuário não encontrado." });
-  }
-
-  const senhaCorreta = bcrypt.compareSync(senha, usuario.senha);
-  if (!senhaCorreta) {
-    return res.status(401).json({ erro: "Senha incorreta." });
+  if (!usuario || !bcrypt.compareSync(senha, usuario.senha)) {
+    return res.status(401).json({ erro: "Credenciais inválidas." });
   }
 
   const token = jwt.sign({ id: usuario.id, email: usuario.email }, SEGREDO_JWT, {
-    expiresIn: "1h",
+    expiresIn: "2h",
   });
 
-  res.status(200).json({ mensagem: "Login realizado com sucesso!", token });
+  res.json({ mensagem: "Login realizado com sucesso!", token });
 });
 
-// Inicia o servidor
+// Servidor
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
