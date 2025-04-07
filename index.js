@@ -12,16 +12,15 @@ const SEGREDO_JWT = "segredo";
 const USUARIOS_PATH = path.join(__dirname, "usuarios.json");
 const CURSOS_PATH = path.join(__dirname, "cursos.json");
 
-// Middleware
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public"))); // Garante que cadastro.html e outros arquivos da pasta "public" sejam acessíveis
+app.use(express.static(path.join(__dirname, "public")));
 
-// Rota principal (opcional)
+// Rota inicial
 app.get("/", (req, res) => {
   res.send("API Renda Compartilhada está no ar!");
 });
 
-// Cadastro de usuário
+// Cadastro
 app.post("/cadastro", (req, res) => {
   const { nome, email, senha, indicadoPor } = req.body;
 
@@ -35,8 +34,8 @@ app.post("/cadastro", (req, res) => {
     usuarios = JSON.parse(dados);
   }
 
-  const emailJaCadastrado = usuarios.find((u) => u.email === email);
-  if (emailJaCadastrado) {
+  const emailJaExiste = usuarios.find((u) => u.email === email);
+  if (emailJaExiste) {
     return res.status(400).json({ erro: "E-mail já cadastrado." });
   }
 
@@ -62,6 +61,10 @@ app.post("/cadastro", (req, res) => {
 app.post("/login", (req, res) => {
   const { email, senha } = req.body;
 
+  if (!fs.existsSync(USUARIOS_PATH)) {
+    return res.status(500).json({ erro: "Banco de dados não encontrado." });
+  }
+
   const dados = fs.readFileSync(USUARIOS_PATH);
   const usuarios = JSON.parse(dados);
 
@@ -77,49 +80,6 @@ app.post("/login", (req, res) => {
   res.json({ mensagem: "Login realizado com sucesso!", token });
 });
 
-// Inicia o servidor
 app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
-});
-// Painel do usuário logado
-app.get("/painel", (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ erro: "Token não fornecido." });
-  }
-
-  const token = authHeader.split(" ")[1];
-  try {
-    const decoded = jwt.verify(token, SEGREDO_JWT);
-    const { id, email } = decoded;
-
-    if (!fs.existsSync(USUARIOS_PATH)) {
-      return res.status(500).json({ erro: "Arquivo de usuários não encontrado." });
-    }
-
-    const dados = fs.readFileSync(USUARIOS_PATH);
-    const usuarios = JSON.parse(dados);
-
-    const usuario = usuarios.find(u => u.id === id && u.email === email);
-    if (!usuario) {
-      return res.status(404).json({ erro: "Usuário não encontrado." });
-    }
-
-    // Pegando os indicados por esse usuário
-    const indicadosDiretos = usuarios.filter(u => u.indicadoPor === usuario.email);
-
-    // Cálculo de ganhos simples (40% por direto)
-    const ganhos = indicadosDiretos.length * 20; // R$20,00 (40% de R$50)
-
-    const resposta = {
-      nome: usuario.nome,
-      email: usuario.email,
-      indicados: indicadosDiretos.map(u => u.email),
-      ganhos
-    };
-
-    res.json(resposta);
-  } catch (err) {
-    res.status(401).json({ erro: "Token inválido." });
-  }
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
