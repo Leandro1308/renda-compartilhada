@@ -10,12 +10,10 @@ const PORT = process.env.PORT || 3000;
 const SEGREDO_JWT = "segredo";
 
 const USUARIOS_PATH = path.join(__dirname, "usuarios.json");
-const CURSOS_PATH = path.join(__dirname, "cursos.json");
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Rota inicial
 app.get("/", (req, res) => {
   res.send("API Renda Compartilhada está no ar!");
 });
@@ -48,20 +46,19 @@ app.post("/cadastro", (req, res) => {
     senha: senhaCriptografada,
     indicadoPor: indicadoPor || null,
     indicados: [],
-    ganhos: 0,
     dataCadastro: new Date().toISOString(),
   };
 
-  // Atualiza a lista de indicados do padrinho, se houver
-  if (novoUsuario.indicadoPor) {
-    const padrinho = usuarios.find((u) => u.email === novoUsuario.indicadoPor);
-    if (padrinho) {
-      padrinho.indicados.push(novoUsuario.email);
-      padrinho.ganhos = (padrinho.ganhos || 0) + 5.0; // Exemplo de comissão
+  usuarios.push(novoUsuario);
+
+  // Atualiza indicados de quem indicou
+  if (indicadoPor) {
+    const indicador = usuarios.find((u) => u.email === indicadoPor);
+    if (indicador) {
+      indicador.indicados.push(email);
     }
   }
 
-  usuarios.push(novoUsuario);
   fs.writeFileSync(USUARIOS_PATH, JSON.stringify(usuarios, null, 2));
 
   res.status(201).json({ mensagem: "Usuário cadastrado com sucesso." });
@@ -90,30 +87,57 @@ app.post("/login", (req, res) => {
   res.json({ mensagem: "Login realizado com sucesso!", token });
 });
 
-// Painel (exibição de dados)
+// Painel
 app.get("/painel", (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ erro: "Token ausente" });
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.json({ erro: "Token não enviado." });
 
+  const token = authHeader.split(" ")[1];
   try {
-    const decodificado = jwt.verify(token, SEGREDO_JWT);
+    const decoded = jwt.verify(token, SEGREDO_JWT);
+
     const dados = fs.readFileSync(USUARIOS_PATH);
     const usuarios = JSON.parse(dados);
 
-    const usuario = usuarios.find((u) => u.email === decodificado.email);
-    if (!usuario) return res.status(404).json({ erro: "Usuário não encontrado" });
+    const usuario = usuarios.find((u) => u.email === decoded.email);
+    if (!usuario) return res.json({ erro: "Usuário não encontrado" });
 
-    const ganhos = usuario.ganhos || 0;
+    // 1º nível
+    const nivel1 = usuario.indicados || [];
+
+    // 2º nível
+    const nivel2 = nivel1.flatMap(email1 => {
+      const u1 = usuarios.find(u => u.email === email1);
+      return u1 ? u1.indicados : [];
+    });
+
+    // 3º nível
+    const nivel3 = nivel2.flatMap(email2 => {
+      const u2 = usuarios.find(u => u.email === email2);
+      return u2 ? u2.indicados : [];
+    });
+
+    // Cálculo de ganhos por nível
+    const ganho1 = nivel1.length * 5.00;
+    const ganho2 = nivel2.length * 3.00;
+    const ganho3 = nivel3.length * 2.00;
+    const total = ganho1 + ganho2 + ganho3;
 
     res.json({
       nome: usuario.nome,
       email: usuario.email,
-      indicados: usuario.indicados || [],
-      ganhos: ganhos,
+      nivel1: nivel1.length,
+      nivel2: nivel2.length,
+      nivel3: nivel3.length,
+      ganhos: {
+        nivel1: ganho1,
+        nivel2: ganho2,
+        nivel3: ganho3,
+        total
+      }
     });
-
-  } catch (e) {
-    res.status(401).json({ erro: "Token inválido ou expirado" });
+  } catch (error) {
+    return res.json({ erro: "Token inválido ou expirado." });
   }
 });
 
