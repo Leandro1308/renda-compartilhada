@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Assinatura - Renda Compartilhada</title>
+  </head>
+  <body>
+    <h1>Ative sua Assinatura</h1>
+    <p>Digite seu e-mail para continuar:</p>
+    <input type="email" id="email" placeholder="seuemail@exemplo.com" />
+    <button onclick="irParaPagamento()">Assinar agora</button>
+
+    <script>
+      function irParaPagamento() {
+        const email = document.getElementById("email").value.trim();
+        if (!email) {
+          alert("Por favor, preencha seu e-mail.");
+          return;
+        }
+
+        const linkPagamento = "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=2c93808496006df901961665ddfe0c4e";
+
+        // Armazena o e-mail no localStorage (se quiser usar mais tarde)
+        localStorage.setItem("emailPagamento", email);
+
+        // Redireciona para o Mercado Pago
+        window.location.href = linkPagamento;
+      }
+    </script>
+  </body>
+</html>
