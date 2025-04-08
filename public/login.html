@@ -2,53 +2,57 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login</title>
+  <title>Login de Usuário</title>
 </head>
 <body>
   <h1>Login de Usuário</h1>
-  <form id="formLogin">
-    <label>Email: <input type="email" id="email" required /></label><br />
-    <label>Senha: <input type="password" id="senha" required /></label><br />
-    <button type="submit">Entrar</button>
-  </form>
 
-  <p id="resposta"></p>
+  <label for="email">Email:</label>
+  <input type="email" id="email" required />
+  <br />
+
+  <label for="senha">Senha:</label>
+  <input type="password" id="senha" required />
+  <br />
+
+  <button onclick="fazerLogin()">Entrar</button>
+
+  <p id="mensagem"></p>
 
   <script>
-    const form = document.getElementById("formLogin");
-    const resposta = document.getElementById("resposta");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
+    function fazerLogin() {
       const email = document.getElementById("email").value;
       const senha = document.getElementById("senha").value;
 
-      try {
-        const res = await fetch("/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, senha })
+      fetch("/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, senha }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const msg = document.getElementById("mensagem");
+
+          if (data.token) {
+            localStorage.setItem("token", data.token);
+            msg.style.color = "green";
+            msg.textContent = "Login realizado com sucesso!";
+            setTimeout(() => {
+              window.location.href = "/painel.html"; // Redireciona após sucesso
+            }, 1000);
+          } else {
+            msg.style.color = "red";
+            msg.textContent = data.erro || "Erro no login.";
+          }
+        })
+        .catch((err) => {
+          document.getElementById("mensagem").style.color = "red";
+          document.getElementById("mensagem").textContent =
+            "Erro ao conectar com o servidor.";
         });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          resposta.innerText = data.mensagem;
-          localStorage.setItem("token", data.token);
-          resposta.style.color = "green";
-          // Redirecionar futuramente para um painel
-          // window.location.href = "/painel.html";
-        } else {
-          resposta.innerText = data.erro;
-          resposta.style.color = "red";
-        }
-      } catch (erro) {
-        resposta.innerText = "Erro ao conectar com o servidor.";
-        resposta.style.color = "red";
-      }
-    });
+    }
   </script>
 </body>
 </html>
