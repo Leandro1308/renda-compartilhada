@@ -11,6 +11,10 @@
     <p>Carregando dados...</p>
   </div>
 
+  <button id="sacarBtn" style="display:none;">Solicitar Saque</button>
+
+  <p id="mensagemSaque" style="color:green;"></p>
+
   <script>
     const token = localStorage.getItem("token");
 
@@ -20,27 +24,45 @@
     }
 
     fetch("/painel", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => res.json())
     .then(data => {
       const div = document.getElementById("dadosUsuario");
+
       if (data.erro) {
         div.innerHTML = `<p style="color:red">${data.erro}</p>`;
-      } else {
-        div.innerHTML = `
-          <p><strong>Nome:</strong> ${data.nome}</p>
-          <p><strong>Email:</strong> ${data.email}</p>
-
-          <p><strong>1º Nível (diretos):</strong> ${data.nivel1} indicados | Ganhos: R$ ${data.ganhos.nivel1.toFixed(2)}</p>
-          <p><strong>2º Nível:</strong> ${data.nivel2} indicados | Ganhos: R$ ${data.ganhos.nivel2.toFixed(2)}</p>
-          <p><strong>3º Nível:</strong> ${data.nivel3} indicados | Ganhos: R$ ${data.ganhos.nivel3.toFixed(2)}</p>
-
-          <p><strong>Ganho Total:</strong> R$ ${data.ganhos.total.toFixed(2)}</p>
-        `;
+        return;
       }
+
+      const { nome, email, nivel1, nivel2, nivel3, ganhos } = data;
+      div.innerHTML = `
+        <p><strong>Nome:</strong> ${nome}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>1º Nível:</strong> ${nivel1} indicados – R$ ${(nivel1 * 20).toFixed(2)}</p>
+        <p><strong>2º Nível:</strong> ${nivel2} indicados – R$ ${(nivel2 * 3.50).toFixed(2)}</p>
+        <p><strong>3º Nível:</strong> ${nivel3} indicados – R$ ${(nivel3 * 1.50).toFixed(2)}</p>
+        <p><strong>Total:</strong> R$ ${ganhos.toFixed(2)}</p>
+      `;
+
+      // Se tiver ganhos ≥ 10, mostra botão de saque
+      if (ganhos >= 10) {
+        document.getElementById("sacarBtn").style.display = "block";
+      }
+
+      document.getElementById("sacarBtn").onclick = () => {
+        fetch("/solicitar-saque", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          }
+        })
+        .then(res => res.json())
+        .then(resp => {
+          document.getElementById("mensagemSaque").textContent = resp.mensagem || resp.erro;
+        });
+      };
     })
     .catch(() => {
       document.getElementById("dadosUsuario").innerHTML = "<p style='color:red'>Erro ao carregar painel.</p>";
