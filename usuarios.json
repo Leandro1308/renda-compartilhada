@@ -1,6 +1,7 @@
 [
   {
     "email": "leandronascimento.psi@gmail.com",
-    "senha": "123456"
+    "senha": "123456",
+    "token": "abc123"
   }
 ]
