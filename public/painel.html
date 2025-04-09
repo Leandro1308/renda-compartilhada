@@ -5,62 +5,57 @@
   <title>Painel do Usuário</title>
   <style>
     body {
+      background-color: #f2f2f2;
       font-family: Arial, sans-serif;
-      background: #f3f3f3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-    .painel {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
       text-align: center;
+      padding: 100px;
+    }
+    .box {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
     .erro {
       color: red;
     }
+    .sucesso {
+      color: green;
+    }
   </style>
 </head>
 <body>
-  <div class="painel" id="painel">
+  <div class="box">
     <h1>Painel do Usuário</h1>
-    <p id="mensagem">Verificando autenticação...</p>
+    <p id="mensagem" class="erro">Verificando autenticação...</p>
   </div>
 
   <script>
     const token = localStorage.getItem("token");
-    const mensagem = document.getElementById("mensagem");
 
-    if (!token) {
-      mensagem.textContent = "Usuário não autenticado.";
-      mensagem.classList.add("erro");
-    } else {
-      fetch("/verificar", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token }),
+    fetch("/verificar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const msg = document.getElementById("mensagem");
+
+        if (data.sucesso) {
+          msg.className = "sucesso";
+          msg.textContent = `Bem-vindo, ${data.email}!`;
+        } else {
+          msg.className = "erro";
+          msg.textContent = "Usuário não autenticado.";
+        }
       })
-        .then(res => res.json())
-        .then(data => {
-          if (data.autenticado) {
-            mensagem.textContent = "Bem-vindo ao seu painel!";
-            mensagem.classList.remove("erro");
-          } else {
-            mensagem.textContent = "Token inválido. Faça login novamente.";
-            mensagem.classList.add("erro");
-            localStorage.removeItem("token");
-          }
-        })
-        .catch(err => {
-          mensagem.textContent = "Erro ao verificar autenticação.";
-          mensagem.classList.add("erro");
-        });
-    }
+      .catch(() => {
+        document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
+      });
   </script>
 </body>
 </html>
