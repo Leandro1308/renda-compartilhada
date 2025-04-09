@@ -1,42 +1,40 @@
-const express = require('express');
-const cors = require('cors');
-const fs = require('fs');
-const jwt = require('jsonwebtoken');
-const path = require('path');
+import express from "express";
+import fs from "fs/promises";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Corrigindo caminhos absolutos com ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, "public")));
 
-const JWT_SECRET = 'secreto123';
+app.post("/login", async (req, res) => {
+  try {
+    const { email, senha } = req.body;
+    const dados = await fs.readFile("./usuarios.json", "utf-8");
+    const usuarios = JSON.parse(dados);
 
-app.post('/login', (req, res) => {
-  const { email, senha } = req.body;
-  const usuarios = JSON.parse(fs.readFileSync('./usuarios.json', 'utf-8'));
-  const usuario = usuarios.find(u => u.email === email && u.senha === senha);
+    const usuario = usuarios.find(
+      (u) => u.email === email && u.senha === senha
+    );
 
-  if (!usuario) {
-    return res.status(401).json({ erro: 'Credenciais inválidas.' });
+    if (usuario) {
+      return res.json({ token: "token-falso-aprovado" });
+    } else {
+      return res.status(401).json({ erro: "Credenciais inválidas." });
+    }
+  } catch (err) {
+    return res.status(500).json({ erro: "Erro interno no servidor." });
   }
-
-  const token = jwt.sign({ email: usuario.email }, JWT_SECRET, { expiresIn: '1h' });
-  res.json({ token });
 });
 
-app.post('/verificar', (req, res) => {
-  const { token } = req.body;
-
-  if (!token) return res.status(401).json({ erro: 'Token ausente.' });
-
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) return res.status(403).json({ erro: 'Token inválido.' });
-
-    res.json({ sucesso: true });
-  });
-});
-
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
