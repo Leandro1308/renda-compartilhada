@@ -1,53 +1,28 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Assine e Tenha Acesso</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0px 5px 15px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    h1 {
-      color: #2e7d32;
-    }
-    p {
-      margin: 20px 0;
-    }
-    a.botao {
-      background-color: #2e7d32;
-      color: white;
-      padding: 15px 25px;
-      text-decoration: none;
-      font-size: 18px;
-      border-radius: 8px;
-      transition: 0.3s;
-    }
-    a.botao:hover {
-      background-color: #1b5e20;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Assinatura - Creça e Enriqueça</title>
 </head>
-<body>
-  <div class="container">
-    <h1>Assinatura Semanal</h1>
-    <p>Você terá acesso completo ao conteúdo por apenas <strong>R$ 2,00 por semana</strong>.</p>
-    <p>Ao clicar abaixo, você será redirecionado para o PagBank para completar o pagamento.</p>
-    <a class="botao" href="http://pag.ae/7_xR8aRnN" target="_blank">Assinar agora</a>
-  </div>
+<body style="font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f5f5f5;">
+
+  <h1>Bem-vindo ao plano <span style="color: green;">Creça e Enriqueça</span>!</h1>
+  <p>Essa é a sua oportunidade de transformar sua vida financeira com apenas <strong>R$ 2,00 por semana</strong>.</p>
+  <p>Para continuar e ter acesso completo aos nossos cursos e mentorias, clique no botão abaixo e conclua sua assinatura de forma segura pelo PagBank:</p>
+
+  <!-- INÍCIO FORMULÁRIO BOTÃO PAGBANK -->
+  <form action="https://pagseguro.uol.com.br/pre-approvals/request.html" method="post" style="margin-top: 30px;">
+    <input type="hidden" name="code" value="273C29FD-FDFD-799D-D4E9-5F85018CBED1" />
+    <input type="hidden" name="iot" value="button" />
+    <input type="image" 
+           src="https://stc.pagseguro.uol.com.br/public/img/botoes/assinaturas/209x48-assinar-assina.gif" 
+           name="submit" 
+           alt="Pague com PagBank - É rápido, grátis e seguro!" 
+           width="209" height="48" />
+  </form>
+  <!-- FIM FORMULÁRIO BOTÃO PAGBANK -->
+
+  <p style="margin-top: 30px; color: gray; font-size: 14px;">Pagamento 100% seguro com PagBank • Você poderá cancelar a qualquer momento.</p>
+
 </body>
 </html>
