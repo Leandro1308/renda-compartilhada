@@ -1,59 +1,53 @@
-import express from 'express';
-import cors from 'cors';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const jwt = require("jsonwebtoken");
+const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const SEGREDO = "segredo-do-leandro"; // você pode alterar isso por segurança
 
-// Corrige __dirname em ES Modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Middlewares
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, "public")));
 
-// Rotas
-app.post('/login', (req, res) => {
+// ===== ROTA DE LOGIN =====
+app.post("/login", (req, res) => {
   const { email, senha } = req.body;
 
-  fs.readFile('./usuarios.json', 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ erro: 'Erro ao ler banco de dados.' });
+  const dadosUsuarios = JSON.parse(fs.readFileSync("usuarios.json", "utf8"));
 
-    const usuarios = JSON.parse(data);
-    const usuario = usuarios.find(u => u.email === email && u.senha === senha);
+  const usuarioEncontrado = dadosUsuarios.find(
+    (u) => u.email === email && u.senha === senha
+  );
 
-    if (usuario) {
-      return res.json({ token: email }); // token provisório
-    } else {
-      return res.status(401).json({ erro: 'Email ou senha inválidos.' });
-    }
-  });
+  if (usuarioEncontrado) {
+    const token = jwt.sign({ email }, SEGREDO, { expiresIn: "2h" });
+    res.json({ token });
+  } else {
+    res.status(401).json({ erro: "Credenciais inválidas." });
+  }
 });
 
-app.get('/usuario', (req, res) => {
-  const token = req.headers.authorization;
+// ===== ROTA DE VERIFICAÇÃO DE TOKEN =====
+app.post("/verificar", (req, res) => {
+  const { token } = req.body;
 
-  if (!token) return res.status(401).json({ erro: 'Token ausente' });
+  if (!token) {
+    return res.status(400).json({ erro: "Token ausente." });
+  }
 
-  fs.readFile('./usuarios.json', 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ erro: 'Erro ao ler banco de dados.' });
-
-    const usuarios = JSON.parse(data);
-    const usuario = usuarios.find(u => u.email === token);
-
-    if (usuario) {
-      res.json(usuario);
-    } else {
-      res.status(401).json({ erro: 'Token inválido' });
-    }
-  });
+  try {
+    const decoded = jwt.verify(token, SEGREDO);
+    res.json({ sucesso: true, email: decoded.email });
+  } catch (erro) {
+    res.status(401).json({ erro: "Token inválido ou expirado." });
+  }
 });
 
-// Inicia servidor
+// ===== INÍCIO DO SERVIDOR =====
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
