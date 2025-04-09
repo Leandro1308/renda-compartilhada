@@ -23,12 +23,25 @@
     .sucesso {
       color: green;
     }
+    .link-container {
+      margin-top: 20px;
+    }
+    .copy-btn {
+      margin-top: 10px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <div class="box">
     <h1>Painel do Usuário</h1>
     <p id="mensagem" class="erro">Verificando autenticação...</p>
+    <div id="link-indicacao" class="link-container" style="display: none;">
+      <p>Seu link de indicação:</p>
+      <input type="text" id="link" readonly style="width: 100%; padding: 5px;">
+      <button class="copy-btn" onclick="copiarLink()">Copiar Link</button>
+    </div>
   </div>
 
   <script>
@@ -45,19 +58,29 @@
       .then((data) => {
         const msg = document.getElementById("mensagem");
 
-        if (data.sucesso) {
+        if (data.sucesso && data.email) {
           msg.className = "sucesso";
           msg.textContent = `Bem-vindo, ${data.email}!`;
+
+          // Mostra link de indicação
+          const linkIndicado = `https://renda-compartilhada-production.up.railway.app/cadastro.html?ref=${token}`;
+          document.getElementById("link").value = linkIndicado;
+          document.getElementById("link-indicacao").style.display = "block";
         } else {
           msg.className = "erro";
           msg.textContent = "Usuário não autenticado.";
         }
       })
       .catch(() => {
-        const msg = document.getElementById("mensagem");
-        msg.className = "erro";
-        msg.textContent = "Erro ao verificar autenticação.";
+        document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
       });
+
+    function copiarLink() {
+      const input = document.getElementById("link");
+      input.select();
+      document.execCommand("copy");
+      alert("Link copiado para a área de transferência!");
+    }
   </script>
 </body>
 </html>
