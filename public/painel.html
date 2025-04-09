@@ -1,59 +1,69 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Painel do Usuário</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      background: #f1f1f1;
       padding: 20px;
     }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: auto;
+    }
     h1 {
-      color: #333;
+      text-align: center;
+    }
+    #mensagem {
+      color: red;
+      font-weight: bold;
+      text-align: center;
     }
     .info {
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 0 5px #ccc;
-      max-width: 600px;
-    }
-    .info p {
-      font-size: 16px;
-      margin: 8px 0;
+      margin-top: 20px;
+      background: #eef;
+      padding: 10px;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>Painel do Usuário</h1>
-  <div class="info" id="painel"></div>
+  <div class="container">
+    <h1>Painel do Usuário</h1>
+    <p id="mensagem">Carregando dados...</p>
+    <div class="info" id="info"></div>
+  </div>
 
   <script>
-    const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
-    const painelDiv = document.getElementById('painel');
+    const token = localStorage.getItem("token");
 
-    if (!usuarioLogado || !usuarioLogado.email) {
-      painelDiv.innerHTML = "<p style='color:red;'>Usuário não autenticado.</p>";
+    if (!token) {
+      document.getElementById("mensagem").textContent = "Usuário não autenticado.";
     } else {
-      fetch(`/api/usuario/${usuarioLogado.email}`)
-        .then(res => {
-          if (!res.ok) throw new Error('Erro ao buscar usuário');
-          return res.json();
-        })
-        .then(usuario => {
-          painelDiv.innerHTML = `
-            <p><strong>Nome:</strong> ${usuario.nome}</p>
-            <p><strong>E-mail:</strong> ${usuario.email}</p>
-            <p><strong>ID:</strong> ${usuario.id}</p>
-            <p><strong>Indicado por:</strong> ${usuario.indicadoPor || "Nenhum"}</p>
-            <p><strong>Indicados diretos:</strong> ${usuario.indicados?.length || 0}</p>
-            <p><strong>Comissão acumulada:</strong> R$ ${usuario.comissao?.toFixed(2) || "0,00"}</p>
-            <p><strong>Data de Cadastro:</strong> ${new Date(usuario.dataCadastro).toLocaleString()}</p>
-          `;
+      fetch("/usuarios.json")
+        .then((res) => res.json())
+        .then((usuarios) => {
+          const usuario = usuarios.find((u) => u.token === token);
+
+          if (usuario) {
+            document.getElementById("mensagem").style.display = "none";
+            document.getElementById("info").innerHTML = `
+              <p><strong>Nome:</strong> ${usuario.nome}</p>
+              <p><strong>Email:</strong> ${usuario.email}</p>
+              <p><strong>Indicados:</strong> ${usuario.indicados.length}</p>
+            `;
+          } else {
+            document.getElementById("mensagem").textContent = "Usuário não autenticado.";
+          }
         })
         .catch(() => {
-          painelDiv.innerHTML = "<p style='color:red;'>Erro ao carregar painel.</p>";
+          document.getElementById("mensagem").textContent = "Erro ao carregar painel.";
         });
     }
   </script>
