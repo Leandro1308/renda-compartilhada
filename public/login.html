@@ -20,39 +20,39 @@
   <p id="mensagem"></p>
 
   <script>
-    async function fazerLogin() {
+    function fazerLogin() {
       const email = document.getElementById("email").value;
       const senha = document.getElementById("senha").value;
 
-      try {
-        const resposta = await fetch("/usuarios.json");
-        const usuarios = await resposta.json();
+      fetch("/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, senha }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const msg = document.getElementById("mensagem");
 
-        const usuario = usuarios.find((u) => u.email === email);
-
-        if (!usuario) {
-          document.getElementById("mensagem").style.color = "red";
-          document.getElementById("mensagem").textContent = "Usuário não encontrado.";
-          return;
-        }
-
-        const match = senha === "12345"; // Simulação (use bcrypt depois)
-
-        if (match) {
-          localStorage.setItem("usuario", JSON.stringify(usuario));
-          document.getElementById("mensagem").style.color = "green";
-          document.getElementById("mensagem").textContent = "Login realizado com sucesso!";
-          setTimeout(() => {
-            window.location.href = "/painel.html";
-          }, 1000);
-        } else {
-          document.getElementById("mensagem").style.color = "red";
-          document.getElementById("mensagem").textContent = "Senha incorreta.";
-        }
-      } catch (error) {
-        document.getElementById("mensagem").style.color = "red";
-        document.getElementById("mensagem").textContent = "Erro ao conectar com o servidor.";
-      }
+          if (data.token) {
+            // ✅ Salva o token
+            localStorage.setItem("token", data.token);
+            msg.style.color = "green";
+            msg.textContent = "Login realizado com sucesso!";
+            setTimeout(() => {
+              window.location.href = "/painel.html";
+            }, 1000);
+          } else {
+            msg.style.color = "red";
+            msg.textContent = data.erro || "Erro no login.";
+          }
+        })
+        .catch(() => {
+          const msg = document.getElementById("mensagem");
+          msg.style.color = "red";
+          msg.textContent = "Erro ao conectar com o servidor.";
+        });
     }
   </script>
 </body>
