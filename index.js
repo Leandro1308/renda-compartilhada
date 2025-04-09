@@ -1,49 +1,45 @@
-const express = require('express');
-const fs = require('fs');
-const jwt = require('jsonwebtoken');
-const path = require('path');
-const cors = require('cors');
+import express from 'express';
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SECRET_KEY = 'sua_chave_secreta';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Login
-app.post('/login', (req, res) => {
-  const { email, senha } = req.body;
-  fs.readFile('./usuarios.json', 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ erro: 'Erro ao ler os dados.' });
+// ✅ ROTA DE VERIFICAÇÃO
+app.post('/verificar', (req, res) => {
+  let body = '';
+  req.on('data', chunk => {
+    body += chunk.toString();
+  });
 
-    const usuarios = JSON.parse(data);
-    const usuario = usuarios.find(u => u.email === email && u.senha === senha);
+  req.on('end', () => {
+    try {
+      const { token } = JSON.parse(body);
+      const usuarios = JSON.parse(fs.readFileSync(path.join(__dirname, 'usuarios.json'), 'utf-8'));
+      const usuario = usuarios.find(u => u.token === token);
 
-    if (usuario) {
-      const token = jwt.sign({ email: usuario.email }, SECRET_KEY, { expiresIn: '1h' });
-      return res.json({ token });
-    } else {
-      return res.status(401).json({ erro: 'Email ou senha inválidos.' });
+      if (usuario) {
+        res.status(200).json({ autenticado: true, email: usuario.email });
+      } else {
+        res.status(401).json({ autenticado: false });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ erro: 'Erro no servidor' });
     }
   });
 });
 
-// Verificação de token
-app.get('/verificar', (req, res) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) return res.status(401).json({ erro: 'Token não enviado.' });
-
-  const token = authHeader.split(' ')[1];
-
-  jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) return res.status(403).json({ erro: 'Token inválido.' });
-    return res.json({ sucesso: true });
-  });
-});
-
+// ✅ INICIAR SERVIDOR
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
