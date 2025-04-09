@@ -1,17 +1,14 @@
 {
   "name": "renda-compartilhada",
   "version": "1.0.0",
-  "description": "Sistema de login simples com Express e autenticação via JSON",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
     "start": "node index.js"
   },
-  "keywords": [],
-  "author": "Leandro Nascimento",
-  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.18.2"
-  },
-  "type": "module"
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0"
+  }
 }
