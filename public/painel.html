@@ -6,38 +6,28 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f1f1f1;
-      padding: 20px;
+      background: #f4f4f4;
+      text-align: center;
+      margin-top: 100px;
     }
-    .container {
+    .caixa {
       background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-      max-width: 600px;
+      width: 400px;
       margin: auto;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    h1 {
-      text-align: center;
-    }
-    #mensagem {
+    .erro {
       color: red;
-      font-weight: bold;
-      text-align: center;
-    }
-    .info {
       margin-top: 20px;
-      background: #eef;
-      padding: 10px;
-      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="caixa">
     <h1>Painel do Usuário</h1>
-    <p id="mensagem">Carregando dados...</p>
-    <div class="info" id="info"></div>
+    <p id="mensagem">Verificando autenticação...</p>
   </div>
 
   <script>
@@ -45,25 +35,28 @@
 
     if (!token) {
       document.getElementById("mensagem").textContent = "Usuário não autenticado.";
+      document.getElementById("mensagem").className = "erro";
     } else {
-      fetch("/usuarios.json")
-        .then((res) => res.json())
-        .then((usuarios) => {
-          const usuario = usuarios.find((u) => u.token === token);
-
-          if (usuario) {
-            document.getElementById("mensagem").style.display = "none";
-            document.getElementById("info").innerHTML = `
-              <p><strong>Nome:</strong> ${usuario.nome}</p>
-              <p><strong>Email:</strong> ${usuario.email}</p>
-              <p><strong>Indicados:</strong> ${usuario.indicados.length}</p>
-            `;
+      fetch("/auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.autenticado) {
+            document.getElementById("mensagem").textContent = "Bem-vindo, " + data.nome + "!";
+            document.getElementById("mensagem").style.color = "green";
           } else {
             document.getElementById("mensagem").textContent = "Usuário não autenticado.";
+            document.getElementById("mensagem").className = "erro";
           }
         })
         .catch(() => {
-          document.getElementById("mensagem").textContent = "Erro ao carregar painel.";
+          document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
+          document.getElementById("mensagem").className = "erro";
         });
     }
   </script>
