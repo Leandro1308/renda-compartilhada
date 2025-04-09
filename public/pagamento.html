@@ -1,31 +1,53 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Assinatura - Renda Compartilhada</title>
-  </head>
-  <body>
-    <h1>Ative sua Assinatura</h1>
-    <p>Digite seu e-mail para continuar:</p>
-    <input type="email" id="email" placeholder="seuemail@exemplo.com" />
-    <button onclick="irParaPagamento()">Assinar agora</button>
-
-    <script>
-      function irParaPagamento() {
-        const email = document.getElementById("email").value.trim();
-        if (!email) {
-          alert("Por favor, preencha seu e-mail.");
-          return;
-        }
-
-        const linkPagamento = "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=2c93808496006df901961665ddfe0c4e";
-
-        // Armazena o e-mail no localStorage (se quiser usar mais tarde)
-        localStorage.setItem("emailPagamento", email);
-
-        // Redireciona para o Mercado Pago
-        window.location.href = linkPagamento;
-      }
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assine e Tenha Acesso</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0px 5px 15px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      color: #2e7d32;
+    }
+    p {
+      margin: 20px 0;
+    }
+    a.botao {
+      background-color: #2e7d32;
+      color: white;
+      padding: 15px 25px;
+      text-decoration: none;
+      font-size: 18px;
+      border-radius: 8px;
+      transition: 0.3s;
+    }
+    a.botao:hover {
+      background-color: #1b5e20;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Assinatura Semanal</h1>
+    <p>Você terá acesso completo ao conteúdo por apenas <strong>R$ 2,00 por semana</strong>.</p>
+    <p>Ao clicar abaixo, você será redirecionado para o PagBank para completar o pagamento.</p>
+    <a class="botao" href="http://pag.ae/7_xR8aRnN" target="_blank">Assinar agora</a>
+  </div>
+</body>
 </html>
