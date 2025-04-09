@@ -6,38 +6,39 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      text-align: center;
-      margin-top: 100px;
+      background: #f3f3f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
-    .caixa {
+    .painel {
       background: white;
-      width: 400px;
-      margin: auto;
       padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      text-align: center;
     }
     .erro {
       color: red;
-      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="caixa">
+  <div class="painel" id="painel">
     <h1>Painel do Usuário</h1>
     <p id="mensagem">Verificando autenticação...</p>
   </div>
 
   <script>
     const token = localStorage.getItem("token");
+    const mensagem = document.getElementById("mensagem");
 
     if (!token) {
-      document.getElementById("mensagem").textContent = "Usuário não autenticado.";
-      document.getElementById("mensagem").className = "erro";
+      mensagem.textContent = "Usuário não autenticado.";
+      mensagem.classList.add("erro");
     } else {
-      fetch("/auth", {
+      fetch("/verificar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -47,16 +48,17 @@
         .then(res => res.json())
         .then(data => {
           if (data.autenticado) {
-            document.getElementById("mensagem").textContent = "Bem-vindo, " + data.nome + "!";
-            document.getElementById("mensagem").style.color = "green";
+            mensagem.textContent = "Bem-vindo ao seu painel!";
+            mensagem.classList.remove("erro");
           } else {
-            document.getElementById("mensagem").textContent = "Usuário não autenticado.";
-            document.getElementById("mensagem").className = "erro";
+            mensagem.textContent = "Token inválido. Faça login novamente.";
+            mensagem.classList.add("erro");
+            localStorage.removeItem("token");
           }
         })
-        .catch(() => {
-          document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
-          document.getElementById("mensagem").className = "erro";
+        .catch(err => {
+          mensagem.textContent = "Erro ao verificar autenticação.";
+          mensagem.classList.add("erro");
         });
     }
   </script>
