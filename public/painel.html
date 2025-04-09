@@ -8,7 +8,7 @@
       background-color: #f2f2f2;
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 100px;
+      padding: 50px;
     }
     .box {
       background: white;
@@ -23,24 +23,31 @@
     .sucesso {
       color: green;
     }
-    .link-container {
+    .link-indicacao {
+      font-size: 14px;
       margin-top: 20px;
-    }
-    .copy-btn {
-      margin-top: 10px;
-      padding: 5px 10px;
-      cursor: pointer;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 8px;
+      word-break: break-word;
     }
   </style>
 </head>
 <body>
   <div class="box">
     <h1>Painel do Usuário</h1>
-    <p id="mensagem" class="erro">Verificando autenticação...</p>
-    <div id="link-indicacao" class="link-container" style="display: none;">
-      <p>Seu link de indicação:</p>
-      <input type="text" id="link" readonly style="width: 100%; padding: 5px;">
-      <button class="copy-btn" onclick="copiarLink()">Copiar Link</button>
+    <p id="mensagem">Verificando autenticação...</p>
+    <div id="dadosUsuario" style="display:none;">
+      <p><strong>Nome:</strong> <span id="nome"></span></p>
+      <p><strong>Email:</strong> <span id="email"></span></p>
+      <p><strong>1º Nível:</strong> <span id="nivel1"></span> indicados - R$ <span id="ganho1"></span></p>
+      <p><strong>2º Nível:</strong> <span id="nivel2"></span> indicados - R$ <span id="ganho2"></span></p>
+      <p><strong>3º Nível:</strong> <span id="nivel3"></span> indicados - R$ <span id="ganho3"></span></p>
+      <p><strong>Total de Ganhos:</strong> R$ <span id="ganhoTotal"></span></p>
+      <div class="link-indicacao">
+        <strong>Seu link de indicação:</strong><br />
+        <span id="linkIndicacao"></span>
+      </div>
     </div>
   </div>
 
@@ -50,37 +57,54 @@
     fetch("/verificar", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({ token }),
+      body: JSON.stringify({ token })
     })
-      .then((res) => res.json())
-      .then((data) => {
-        const msg = document.getElementById("mensagem");
+    .then(res => res.json())
+    .then(data => {
+      if (!data.sucesso) {
+        document.getElementById("mensagem").textContent = "Usuário não autenticado.";
+        return;
+      }
 
-        if (data.sucesso && data.email) {
-          msg.className = "sucesso";
-          msg.textContent = `Bem-vindo, ${data.email}!`;
+      // Aqui carregamos os dados do usuário
+      fetch("/usuarios.json")
+        .then(res => res.json())
+        .then(usuarios => {
+          const usuario = usuarios.find(u => u.token === token);
+          if (!usuario) {
+            document.getElementById("mensagem").textContent = "Usuário não encontrado.";
+            return;
+          }
 
-          // Mostra link de indicação
-          const linkIndicado = `https://renda-compartilhada-production.up.railway.app/cadastro.html?ref=${token}`;
-          document.getElementById("link").value = linkIndicado;
-          document.getElementById("link-indicacao").style.display = "block";
-        } else {
-          msg.className = "erro";
-          msg.textContent = "Usuário não autenticado.";
-        }
-      })
-      .catch(() => {
-        document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
-      });
+          const nivel1 = usuarios.filter(u => u.indicadoPor === usuario.token);
+          const nivel2 = usuarios.filter(u => nivel1.some(n1 => u.indicadoPor === n1.token));
+          const nivel3 = usuarios.filter(u => nivel2.some(n2 => u.indicadoPor === n2.token));
 
-    function copiarLink() {
-      const input = document.getElementById("link");
-      input.select();
-      document.execCommand("copy");
-      alert("Link copiado para a área de transferência!");
-    }
+          const ganho1 = nivel1.length * 20;
+          const ganho2 = nivel2.length * 3.50;
+          const ganho3 = nivel3.length * 1.50;
+
+          document.getElementById("mensagem").style.display = "none";
+          document.getElementById("dadosUsuario").style.display = "block";
+
+          document.getElementById("nome").textContent = usuario.nome;
+          document.getElementById("email").textContent = usuario.email;
+          document.getElementById("nivel1").textContent = nivel1.length;
+          document.getElementById("nivel2").textContent = nivel2.length;
+          document.getElementById("nivel3").textContent = nivel3.length;
+          document.getElementById("ganho1").textContent = ganho1.toFixed(2);
+          document.getElementById("ganho2").textContent = ganho2.toFixed(2);
+          document.getElementById("ganho3").textContent = ganho3.toFixed(2);
+          document.getElementById("ganhoTotal").textContent = (ganho1 + ganho2 + ganho3).toFixed(2);
+          document.getElementById("linkIndicacao").textContent =
+            `https://seusite.com/cadastro.html?ref=${usuario.token}`;
+        });
+    })
+    .catch(() => {
+      document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
+    });
   </script>
 </body>
 </html>
