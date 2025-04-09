@@ -1,97 +1,65 @@
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const express = require("express");
+const fs = require("fs");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static('public'));
-app.use(express.json());
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "public")));
 
-const usuariosPath = path.join(__dirname, 'marketing-multinivel', 'usuarios.json');
+const USERS_FILE = path.join(__dirname, "usuarios.json");
 
-// Função para ler os usuários
+function gerarToken() {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
 function lerUsuarios() {
   try {
-    const dados = fs.readFileSync(usuariosPath, 'utf-8');
-    return JSON.parse(dados);
-  } catch (error) {
+    const data = fs.readFileSync(USERS_FILE);
+    return JSON.parse(data);
+  } catch {
     return [];
   }
 }
 
-// Função para salvar os usuários
 function salvarUsuarios(usuarios) {
-  fs.writeFileSync(usuariosPath, JSON.stringify(usuarios, null, 2), 'utf-8');
+  fs.writeFileSync(USERS_FILE, JSON.stringify(usuarios, null, 2));
 }
 
-// Cadastro de novo usuário
-app.post('/api/cadastrar', (req, res) => {
-  const { nome, email, senha, indicadoPor } = req.body;
-  const usuarios = lerUsuarios();
-
-  const id = Date.now();
-
-  const novoUsuario = {
-    id,
-    nome,
-    email,
-    senha,
-    indicadoPor: indicadoPor || null,
-    indicados: [],
-    comissao: 0,
-    dataCadastro: new Date().toISOString()
-  };
-
-  usuarios.push(novoUsuario);
-
-  // Atualiza a árvore de indicação (níveis 1 a 3)
-  if (indicadoPor) {
-    const nivel1 = usuarios.find(u => u.email === indicadoPor);
-    if (nivel1) {
-      nivel1.indicados.push(email);
-      nivel1.comissao += 2;
-
-      const nivel2 = usuarios.find(u => u.email === nivel1.indicadoPor);
-      if (nivel2) {
-        nivel2.comissao += 0.70;
-
-        const nivel3 = usuarios.find(u => u.email === nivel2.indicadoPor);
-        if (nivel3) {
-          nivel3.comissao += 0.30;
-        }
-      }
-    }
-  }
-
-  salvarUsuarios(usuarios);
-  res.status(201).json({ mensagem: 'Usuário cadastrado com sucesso!' });
-});
-
-// Login
-app.post('/api/login', (req, res) => {
+// ROTA DE LOGIN
+app.post("/login", (req, res) => {
   const { email, senha } = req.body;
   const usuarios = lerUsuarios();
+
   const usuario = usuarios.find(u => u.email === email && u.senha === senha);
 
-  if (usuario) {
-    res.json(usuario);
-  } else {
-    res.status(401).json({ erro: 'Usuário ou senha inválidos' });
+  if (!usuario) {
+    return res.status(401).json({ erro: "Email ou senha inválidos." });
   }
+
+  const token = gerarToken();
+  usuario.token = token;
+  salvarUsuarios(usuarios);
+
+  res.json({ token, nome: usuario.nome });
 });
 
-// Obter painel do usuário
-app.get('/api/usuario/:email', (req, res) => {
+// ROTA DE AUTENTICAÇÃO PELO TOKEN
+app.post("/auth", (req, res) => {
+  const { token } = req.body;
   const usuarios = lerUsuarios();
-  const usuario = usuarios.find(u => u.email === req.params.email);
+  const usuario = usuarios.find(u => u.token === token);
 
   if (usuario) {
-    res.json(usuario);
+    res.json({ autenticado: true, nome: usuario.nome });
   } else {
-    res.status(404).json({ erro: 'Usuário não encontrado' });
+    res.status(403).json({ autenticado: false });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
