@@ -45,7 +45,7 @@
       .then((data) => {
         const msg = document.getElementById("mensagem");
 
-        if (data.autenticado) {
+        if (data.sucesso) {
           msg.className = "sucesso";
           msg.textContent = `Bem-vindo, ${data.email}!`;
         } else {
@@ -54,7 +54,9 @@
         }
       })
       .catch(() => {
-        document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
+        const msg = document.getElementById("mensagem");
+        msg.className = "erro";
+        msg.textContent = "Erro ao verificar autenticação.";
       });
   </script>
 </body>
