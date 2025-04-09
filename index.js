@@ -14,7 +14,32 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ✅ ROTA DE VERIFICAÇÃO
+// ✅ ROTA /LOGIN - valida email e senha
+app.post('/login', (req, res) => {
+  let body = '';
+  req.on('data', chunk => {
+    body += chunk.toString();
+  });
+
+  req.on('end', () => {
+    try {
+      const { email, senha } = JSON.parse(body);
+      const usuarios = JSON.parse(fs.readFileSync(path.join(__dirname, 'usuarios.json'), 'utf-8'));
+      const usuario = usuarios.find(u => u.email === email && u.senha === senha);
+
+      if (usuario) {
+        res.status(200).json({ sucesso: true, token: usuario.token });
+      } else {
+        res.status(401).json({ sucesso: false, mensagem: 'Credenciais inválidas.' });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor.' });
+    }
+  });
+});
+
+// ✅ ROTA /VERIFICAR - valida token salvo no localStorage
 app.post('/verificar', (req, res) => {
   let body = '';
   req.on('data', chunk => {
@@ -34,12 +59,11 @@ app.post('/verificar', (req, res) => {
       }
     } catch (error) {
       console.error(error);
-      res.status(500).json({ erro: 'Erro no servidor' });
+      res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
   });
 });
 
-// ✅ INICIAR SERVIDOR
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
