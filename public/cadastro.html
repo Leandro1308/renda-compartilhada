@@ -1,74 +1,46 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Cadastro de Usuário</title>
-  <style>
-    body {
-      background-color: #f2f2f2;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 100px;
-    }
-    .box {
-      background: white;
-      border-radius: 10px;
-      padding: 30px;
-      display: inline-block;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    .erro {
-      color: red;
-    }
-    .sucesso {
-      color: green;
-    }
-  </style>
 </head>
 <body>
-  <div class="box">
-    <h1>Cadastro de Usuário</h1>
+  <h1>Cadastro de Usuário</h1>
 
-    <label for="email">Email:</label>
-    <input type="email" id="email" required /><br /><br />
+  <label for="email">Email:</label>
+  <input type="email" id="email" required><br>
 
-    <label for="senha">Senha:</label>
-    <input type="password" id="senha" required /><br /><br />
+  <label for="senha">Senha:</label>
+  <input type="password" id="senha" required><br><br>
 
-    <button onclick="cadastrar()">Cadastrar</button>
+  <button onclick="cadastrar()">Cadastrar</button>
 
-    <p id="mensagem"></p>
-  </div>
+  <p id="mensagem"></p>
 
   <script>
-    function cadastrar() {
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
-      const msg = document.getElementById("mensagem");
+    function getRefFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('ref'); // Pega ?ref=abc123
+    }
 
-      fetch("/cadastro", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, senha }),
+    function cadastrar() {
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+      const indicadoPor = getRefFromURL();
+
+      fetch('/cadastro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha, indicadoPor })
       })
         .then(res => res.json())
         .then(data => {
-          if (data.sucesso) {
-            msg.className = "sucesso";
-            msg.textContent = data.mensagem;
-            setTimeout(() => {
-              window.location.href = "/login.html";
-            }, 2000);
-          } else {
-            msg.className = "erro";
-            msg.textContent = data.mensagem || "Erro ao cadastrar.";
-          }
+          const msg = document.getElementById('mensagem');
+          msg.style.color = data.sucesso ? 'green' : 'red';
+          msg.textContent = data.mensagem;
         })
         .catch(() => {
-          msg.className = "erro";
-          msg.textContent = "Erro ao conectar com o servidor.";
+          document.getElementById('mensagem').textContent = 'Erro ao cadastrar.';
         });
     }
   </script>
