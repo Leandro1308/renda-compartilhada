@@ -1,65 +1,59 @@
-const express = require("express");
-const fs = require("fs");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const path = require("path");
+import express from 'express';
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Corrige __dirname em ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Middlewares
 app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json());
+app.use(express.static('public'));
 
-const USERS_FILE = path.join(__dirname, "usuarios.json");
-
-function gerarToken() {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36);
-}
-
-function lerUsuarios() {
-  try {
-    const data = fs.readFileSync(USERS_FILE);
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
-
-function salvarUsuarios(usuarios) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(usuarios, null, 2));
-}
-
-// ROTA DE LOGIN
-app.post("/login", (req, res) => {
+// Rotas
+app.post('/login', (req, res) => {
   const { email, senha } = req.body;
-  const usuarios = lerUsuarios();
 
-  const usuario = usuarios.find(u => u.email === email && u.senha === senha);
+  fs.readFile('./usuarios.json', 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ erro: 'Erro ao ler banco de dados.' });
 
-  if (!usuario) {
-    return res.status(401).json({ erro: "Email ou senha inválidos." });
-  }
+    const usuarios = JSON.parse(data);
+    const usuario = usuarios.find(u => u.email === email && u.senha === senha);
 
-  const token = gerarToken();
-  usuario.token = token;
-  salvarUsuarios(usuarios);
-
-  res.json({ token, nome: usuario.nome });
+    if (usuario) {
+      return res.json({ token: email }); // token provisório
+    } else {
+      return res.status(401).json({ erro: 'Email ou senha inválidos.' });
+    }
+  });
 });
 
-// ROTA DE AUTENTICAÇÃO PELO TOKEN
-app.post("/auth", (req, res) => {
-  const { token } = req.body;
-  const usuarios = lerUsuarios();
-  const usuario = usuarios.find(u => u.token === token);
+app.get('/usuario', (req, res) => {
+  const token = req.headers.authorization;
 
-  if (usuario) {
-    res.json({ autenticado: true, nome: usuario.nome });
-  } else {
-    res.status(403).json({ autenticado: false });
-  }
+  if (!token) return res.status(401).json({ erro: 'Token ausente' });
+
+  fs.readFile('./usuarios.json', 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ erro: 'Erro ao ler banco de dados.' });
+
+    const usuarios = JSON.parse(data);
+    const usuario = usuarios.find(u => u.email === token);
+
+    if (usuario) {
+      res.json(usuario);
+    } else {
+      res.status(401).json({ erro: 'Token inválido' });
+    }
+  });
 });
 
+// Inicia servidor
 app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
