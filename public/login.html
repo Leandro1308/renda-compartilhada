@@ -23,30 +23,35 @@
     async function fazerLogin() {
       const email = document.getElementById("email").value;
       const senha = document.getElementById("senha").value;
-      const mensagem = document.getElementById("mensagem");
 
       try {
-        const resposta = await fetch("/marketing-multinivel/usuarios.json");
+        const resposta = await fetch("/usuarios.json");
         const usuarios = await resposta.json();
 
-        const usuario = usuarios.find(
-          (u) => u.email === email && u.senha === senha
-        );
+        const usuario = usuarios.find((u) => u.email === email);
 
-        if (usuario) {
-          localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
-          mensagem.style.color = "green";
-          mensagem.textContent = "Login realizado com sucesso!";
+        if (!usuario) {
+          document.getElementById("mensagem").style.color = "red";
+          document.getElementById("mensagem").textContent = "Usuário não encontrado.";
+          return;
+        }
+
+        const match = senha === "12345"; // Simulação (use bcrypt depois)
+
+        if (match) {
+          localStorage.setItem("usuario", JSON.stringify(usuario));
+          document.getElementById("mensagem").style.color = "green";
+          document.getElementById("mensagem").textContent = "Login realizado com sucesso!";
           setTimeout(() => {
             window.location.href = "/painel.html";
           }, 1000);
         } else {
-          mensagem.style.color = "red";
-          mensagem.textContent = "Email ou senha incorretos.";
+          document.getElementById("mensagem").style.color = "red";
+          document.getElementById("mensagem").textContent = "Senha incorreta.";
         }
-      } catch (erro) {
-        mensagem.style.color = "red";
-        mensagem.textContent = "Erro ao conectar com o servidor.";
+      } catch (error) {
+        document.getElementById("mensagem").style.color = "red";
+        document.getElementById("mensagem").textContent = "Erro ao conectar com o servidor.";
       }
     }
   </script>
