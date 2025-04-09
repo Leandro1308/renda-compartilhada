@@ -45,7 +45,7 @@
       .then((data) => {
         const msg = document.getElementById("mensagem");
 
-        if (data.sucesso) {
+        if (data.autenticado) {
           msg.className = "sucesso";
           msg.textContent = `Bem-vindo, ${data.email}!`;
         } else {
