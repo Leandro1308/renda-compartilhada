@@ -1,0 +1,14 @@
+[
+  {
+    "email": "leandronascimento.psi@gmail.com",
+    "senha": "123456"
+  },
+  {
+    "email": "admin@exemplo.com",
+    "senha": "admin123"
+  },
+  {
+    "email": "usuario@teste.com",
+    "senha": "teste123"
+  }
+]
