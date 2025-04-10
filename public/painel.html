@@ -1,88 +1,65 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Painel do Afiliado</title>
-  <style>
-    body {
-      background-color: #f2f2f2;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 100px;
-    }
-    .box {
-      background: white;
-      border-radius: 10px;
-      padding: 30px;
-      display: inline-block;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    .sucesso {
-      color: green;
-      font-size: 18px;
-      margin-bottom: 20px;
-    }
-    #linkIndicacao {
-      font-weight: bold;
-      color: #2c3e50;
-      background: #f0f0f0;
-      padding: 10px;
-      border-radius: 8px;
-      display: inline-block;
-      margin-top: 10px;
-    }
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Painel do Usuário</title>
 </head>
 <body>
-  <div class="box">
-    <h1>Painel do Afiliado</h1>
-    <p id="mensagem" class="sucesso">Verificando autenticação...</p>
-    <p id="linkContainer" style="display: none;">
-      Seu link de indicação:<br>
-      <span id="linkIndicacao"></span><br>
-      <button onclick="copiarLink()">Copiar link</button>
-    </p>
-  </div>
+  <h1>Bem-vindo ao seu Painel</h1>
+
+  <p id="dados"></p>
+
+  <button onclick="solicitarSaque()">Solicitar Saque</button><br><br>
+  <button onclick="logout()">Sair</button>
 
   <script>
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
 
-    fetch("/verificar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
+    if (!token) {
+      window.location.href = '/login.html';
+    }
+
+    fetch('/verificar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
     })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.sucesso) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const linkIndicacao = `${window.location.origin}/public/cadastro.html?indicador=${data.email}`;
+
+      document.getElementById('dados').innerHTML = `
+        Nome: ${data.nome}<br>
+        Email: ${data.email}<br>
+        Saldo: R$ ${data.saldo.toFixed(2)}<br>
+        Status do Saque: ${data.statusSaque}<br>
+        <br>
+        Seu link de indicação:<br>
+        <a href="${linkIndicacao}">${linkIndicacao}</a>
+      `;
+    })
+
+    function solicitarSaque() {
+      fetch('/sacar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      })
       .then(res => res.json())
       .then(data => {
-        const msg = document.getElementById("mensagem");
-        const linkContainer = document.getElementById("linkContainer");
-        const linkIndicacao = document.getElementById("linkIndicacao");
-
-        if (data.sucesso) {
-          msg.innerHTML = `Bem-vindo, ${data.email}!`;
-          const link = `https://renda-compartilhada-production.up.railway.app/cadastro.html?ref=${encodeURIComponent(data.email)}`;
-          linkIndicacao.textContent = link;
-          linkContainer.style.display = "block";
-        } else {
-          msg.className = "erro";
-          msg.textContent = "Usuário não autenticado.";
-        }
+        alert(data.mensagem);
+        location.reload();
       })
-      .catch(() => {
-        document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
-      });
+    }
 
-    function copiarLink() {
-      const link = document.getElementById("linkIndicacao").textContent;
-      navigator.clipboard.writeText(link)
-        .then(() => alert("Link copiado com sucesso!"))
-        .catch(() => alert("Erro ao copiar o link."));
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login.html';
     }
   </script>
 </body>
