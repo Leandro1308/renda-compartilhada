@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Histórico de Pagamentos</title>
+  <style>
+    body {
+      background-color: #f2f2f2;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    .box {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    td {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Histórico de Pagamentos</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Valor</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tabela">
+        <tr><td colspan="3">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    fetch('/historico', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    })
+    .then(res => res.json())
+    .then(data => {
+      const tabela = document.getElementById('tabela');
+      tabela.innerHTML = '';
+
+      if (data.sucesso && data.pagamentos.length > 0) {
+        data.pagamentos.forEach(pagamento => {
+          const linha = `
+            <tr>
+              <td>${pagamento.data}</td>
+              <td>R$ ${pagamento.valor.toFixed(2)}</td>
+              <td>${pagamento.status}</td>
+            </tr>
+          `;
+          tabela.innerHTML += linha;
+        });
+      } else {
+        tabela.innerHTML = '<tr><td colspan="3">Nenhum pagamento encontrado.</td></tr>';
+      }
+    });
+  </script>
+</body>
+</html>
