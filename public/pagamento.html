@@ -1,28 +1,92 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Assinatura - Creça e Enriqueça</title>
+  <meta charset="UTF-8" />
+  <title>Pagamento do Afiliado</title>
+  <style>
+    body {
+      background-color: #f2f2f2;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 100px;
+    }
+    .box {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .saldo {
+      color: green;
+      font-size: 20px;
+      margin-top: 10px;
+    }
+    .msg {
+      margin-top: 20px;
+      color: blue;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+  </style>
 </head>
-<body style="font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f5f5f5;">
+<body>
+  <div class="box">
+    <h1>Pagamento do Afiliado</h1>
+    <p class="saldo">Carregando seu saldo...</p>
+    <p>Valor mínimo para saque: R$ 5,00</p>
+    <button onclick="sacar()">Solicitar Saque</button>
+    <p class="msg"></p>
+  </div>
 
-  <h1>Bem-vindo ao plano <span style="color: green;">Creça e Enriqueça</span>!</h1>
-  <p>Essa é a sua oportunidade de transformar sua vida financeira com apenas <strong>R$ 2,00 por semana</strong>.</p>
-  <p>Para continuar e ter acesso completo aos nossos cursos e mentorias, clique no botão abaixo e conclua sua assinatura de forma segura pelo PagBank:</p>
+  <script>
+    const token = localStorage.getItem('token');
 
-  <!-- INÍCIO FORMULÁRIO BOTÃO PAGBANK -->
-  <form action="https://pagseguro.uol.com.br/pre-approvals/request.html" method="post" style="margin-top: 30px;">
-    <input type="hidden" name="code" value="273C29FD-FDFD-799D-D4E9-5F85018CBED1" />
-    <input type="hidden" name="iot" value="button" />
-    <input type="image" 
-           src="https://stc.pagseguro.uol.com.br/public/img/botoes/assinaturas/209x48-assinar-assina.gif" 
-           name="submit" 
-           alt="Pague com PagBank - É rápido, grátis e seguro!" 
-           width="209" height="48" />
-  </form>
-  <!-- FIM FORMULÁRIO BOTÃO PAGBANK -->
+    if (!token) {
+      window.location.href = 'login.html';
+    }
 
-  <p style="margin-top: 30px; color: gray; font-size: 14px;">Pagamento 100% seguro com PagBank • Você poderá cancelar a qualquer momento.</p>
+    function carregarSaldo() {
+      fetch('/verificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.sucesso) {
+            document.querySelector('.saldo').textContent = `Seu saldo: R$ ${data.saldo.toFixed(2)}`;
+          } else {
+            document.querySelector('.saldo').textContent = 'Usuário não autenticado.';
+          }
+        });
+    }
 
+    carregarSaldo();
+
+    function sacar() {
+      fetch('/saque', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      })
+        .then(res => res.json())
+        .then(data => {
+          const msg = document.querySelector('.msg');
+          if (data.sucesso) {
+            msg.style.color = 'green';
+            msg.textContent = data.mensagem;
+            carregarSaldo();
+          } else {
+            msg.style.color = 'red';
+            msg.textContent = data.mensagem;
+          }
+        });
+    }
+  </script>
 </body>
 </html>
