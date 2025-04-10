@@ -3,7 +3,6 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import crypto from 'crypto';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,103 +14,64 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const USUARIOS_PATH = path.join(__dirname, 'usuarios.json');
-
-const lerUsuarios = () => {
-  if (!fs.existsSync(USUARIOS_PATH)) return [];
-  const dados = fs.readFileSync(USUARIOS_PATH);
-  return JSON.parse(dados);
-};
-
-const salvarUsuarios = (usuarios) => {
-  fs.writeFileSync(USUARIOS_PATH, JSON.stringify(usuarios, null, 2));
-};
-
-// Cadastro
-app.post('/cadastro', (req, res) => {
-  const { nome, email, senha, indicadoPor } = req.body;
-  const usuarios = lerUsuarios();
-
-  if (usuarios.find(u => u.email === email)) {
-    return res.status(400).json({ sucesso: false, mensagem: 'Email já cadastrado.' });
-  }
-
-  const token = crypto.randomBytes(16).toString('hex');
-
-  const novoUsuario = {
-    nome,
-    email,
-    senha,
-    token,
-    saldo: 0,
-    statusSaque: 'Nenhum',
-    indicadoPor: indicadoPor || null,
-  };
-
-  // vincular indicado
-  if (indicadoPor) {
-    const indicador = usuarios.find(u => u.email === indicadoPor);
-    if (indicador) {
-      indicador.saldo += 1; // comissão simbólica de R$1 por cadastro
-    }
-  }
-
-  usuarios.push(novoUsuario);
-  salvarUsuarios(usuarios);
-
-  res.json({ sucesso: true, mensagem: 'Cadastro realizado com sucesso!' });
-});
-
-// Login
+// ROTA LOGIN
 app.post('/login', (req, res) => {
-  const { email, senha } = req.body;
-  const usuarios = lerUsuarios();
+  try {
+    const { email, senha } = req.body;
+    const usuarios = JSON.parse(fs.readFileSync(path.join(__dirname, 'usuarios.json'), 'utf-8'));
+    const usuario = usuarios.find(u => u.email === email && u.senha === senha);
 
-  const usuario = usuarios.find(u => u.email === email && u.senha === senha);
-  if (!usuario) {
-    return res.status(401).json({ sucesso: false, mensagem: 'Credenciais inválidas.' });
+    if (usuario) {
+      res.status(200).json({ sucesso: true, token: usuario.token });
+    } else {
+      res.status(401).json({ sucesso: false, mensagem: 'Credenciais inválidas.' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor.' });
   }
-
-  res.json({ sucesso: true, mensagem: 'Login realizado com sucesso!', token: usuario.token });
 });
 
-// Verificação
+// ROTA VERIFICAR TOKEN
 app.post('/verificar', (req, res) => {
-  const { token } = req.body;
-  const usuarios = lerUsuarios();
+  try {
+    const { token } = req.body;
+    const usuarios = JSON.parse(fs.readFileSync(path.join(__dirname, 'usuarios.json'), 'utf-8'));
+    const usuario = usuarios.find(u => u.token === token);
 
-  const usuario = usuarios.find(u => u.token === token);
-  if (!usuario) {
-    return res.status(401).json({ sucesso: false });
+    if (usuario) {
+      res.status(200).json({ sucesso: true, email: usuario.email });
+    } else {
+      res.status(401).json({ sucesso: false });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor.' });
   }
-
-  res.json({
-    sucesso: true,
-    nome: usuario.nome,
-    email: usuario.email,
-    saldo: usuario.saldo,
-    statusSaque: usuario.statusSaque
-  });
 });
 
-// Solicitação de Saque
-app.post('/sacar', (req, res) => {
-  const { token } = req.body;
-  const usuarios = lerUsuarios();
+// ROTA CADASTRO NOVO USUÁRIO
+app.post('/cadastro', (req, res) => {
+  try {
+    const { nome, email, senha, indicadoPor, token } = req.body;
+    const usuariosPath = path.join(__dirname, 'usuarios.json');
+    const usuarios = JSON.parse(fs.readFileSync(usuariosPath, 'utf-8'));
 
-  const usuario = usuarios.find(u => u.token === token);
-  if (!usuario) {
-    return res.status(401).json({ sucesso: false, mensagem: 'Usuário não encontrado.' });
+    const existe = usuarios.find(u => u.email === email);
+
+    if (existe) {
+      return res.status(400).json({ sucesso: false, mensagem: 'Email já cadastrado.' });
+    }
+
+    usuarios.push({ nome, email, senha, indicadoPor, token });
+
+    fs.writeFileSync(usuariosPath, JSON.stringify(usuarios, null, 2));
+
+    res.status(201).json({ sucesso: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor.' });
   }
-
-  if (usuario.saldo < 10) {
-    return res.json({ sucesso: false, mensagem: 'Saldo insuficiente (mínimo R$10,00).' });
-  }
-
-  usuario.statusSaque = 'Solicitado';
-  salvarUsuarios(usuarios);
-
-  res.json({ sucesso: true, mensagem: 'Solicitação de saque enviada com sucesso!' });
 });
 
 app.listen(PORT, () => {
