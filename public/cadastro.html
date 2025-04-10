@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Cadastro de Afiliado</title>
+  <meta charset="UTF-8" />
+  <title>Cadastro de Usuário</title>
   <style>
     body {
       background-color: #f2f2f2;
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 50px;
+      padding: 100px;
     }
     .box {
       background: white;
@@ -18,79 +18,80 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
     input {
+      width: 100%;
       padding: 10px;
-      margin: 5px;
-      width: 250px;
+      margin: 10px 0;
     }
     button {
       padding: 10px 20px;
-      margin-top: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
     }
-    .erro { color: red; }
-    .sucesso { color: green; }
+    .erro {
+      color: red;
+    }
+    .sucesso {
+      color: green;
+    }
   </style>
 </head>
 <body>
+  <div class="box">
+    <h1>Cadastro de Usuário</h1>
 
-<div class="box">
-  <h1>Cadastro de Afiliado</h1>
+    <input type="text" id="nome" placeholder="Seu nome completo" required /><br />
+    <input type="email" id="email" placeholder="Seu e-mail" required /><br />
+    <input type="password" id="senha" placeholder="Sua senha" required /><br />
+    <input type="hidden" id="indicadoPor" /><br />
 
-  <input type="text" id="nome" placeholder="Nome completo"><br>
-  <input type="email" id="email" placeholder="Seu e-mail"><br>
-  <input type="password" id="senha" placeholder="Senha"><br>
-  
-  <input type="text" id="indicador" readonly><br>
+    <button onclick="cadastrar()">Cadastrar</button>
 
-  <button onclick="cadastrar()">Cadastrar</button>
+    <p id="mensagem"></p>
+  </div>
 
-  <p id="mensagem"></p>
-</div>
+  <script>
+    // pegar o email do indicador do link
+    const urlParams = new URLSearchParams(window.location.search);
+    const indicadoPor = urlParams.get('ref');
+    document.getElementById('indicadoPor').value = indicadoPor || '';
 
-<script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const ref = urlParams.get('ref') || 'Sem indicação';
-  document.getElementById('indicador').value = ref;
+    function cadastrar() {
+      const nome = document.getElementById("nome").value;
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+      const indicadoPor = document.getElementById("indicadoPor").value;
 
-  function gerarToken() {
-    return Math.random().toString(36).substr(2, 10);
-  }
+      fetch("/cadastro", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ nome, email, senha, indicadoPor }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const msg = document.getElementById("mensagem");
 
-  function cadastrar() {
-    const nome = document.getElementById('nome').value;
-    const email = document.getElementById('email').value;
-    const senha = document.getElementById('senha').value;
-    const indicadoPor = ref;
-    const token = gerarToken();
-
-    if (!nome || !email || !senha) {
-      document.getElementById('mensagem').textContent = "Preencha todos os campos!";
-      document.getElementById('mensagem').className = 'erro';
-      return;
+          if (data.mensagem) {
+            msg.className = "sucesso";
+            msg.textContent = data.mensagem;
+            setTimeout(() => {
+              window.location.href = "/login.html";
+            }, 2000);
+          } else {
+            msg.className = "erro";
+            msg.textContent = data.erro || "Erro ao cadastrar.";
+          }
+        })
+        .catch(() => {
+          const msg = document.getElementById("mensagem");
+          msg.className = "erro";
+          msg.textContent = "Erro ao conectar com o servidor.";
+        });
     }
-
-    fetch("/cadastro", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ nome, email, senha, indicadoPor, token }),
-    })
-    .then(res => res.json())
-    .then(data => {
-      if(data.sucesso) {
-        document.getElementById('mensagem').textContent = "Cadastro realizado com sucesso!";
-        document.getElementById('mensagem').className = 'sucesso';
-        setTimeout(() => window.location.href = "/login.html", 1500);
-      } else {
-        document.getElementById('mensagem').textContent = data.mensagem;
-        document.getElementById('mensagem').className = 'erro';
-      }
-    })
-    .catch(() => {
-      document.getElementById('mensagem').textContent = "Erro ao cadastrar.";
-      document.getElementById('mensagem').className = 'erro';
-    });
-  }
-</script>
-
+  </script>
 </body>
 </html>
