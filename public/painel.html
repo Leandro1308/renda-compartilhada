@@ -1,96 +1,114 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Painel do Afiliado</title>
   <style>
     body {
       background-color: #f2f2f2;
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 100px;
+      padding: 50px;
     }
     .box {
       background: white;
       border-radius: 10px;
       padding: 30px;
       display: inline-block;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 500px;
     }
-    .erro {
-      color: red;
-    }
-    .sucesso {
-      color: green;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-    }
-    button {
-      padding: 10px 20px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+    .erro { color: red; }
+    .sucesso { color: green; }
+    input { padding: 5px; width: 90%; margin-bottom: 10px; }
+    button { padding: 10px; margin-top: 10px; }
   </style>
 </head>
 <body>
+
   <div class="box">
     <h1>Painel do Afiliado</h1>
-    <p id="mensagem" class="erro">Verificando autenticação...</p>
-    <div id="painel" style="display:none;">
-      <p><strong>Nome:</strong> <span id="nome"></span></p>
-      <p><strong>Email:</strong> <span id="email"></span></p>
-      <p>Seu link de indicação:</p>
-      <input type="text" id="link" readonly>
-      <button onclick="copiar()">Copiar link</button>
+    <div id="conteudo">
+      <p>Carregando...</p>
     </div>
   </div>
 
-  <script>
-    const token = localStorage.getItem("token");
+<script>
+const token = localStorage.getItem("token");
 
-    fetch("/verificar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        const msg = document.getElementById("mensagem");
-        const painel = document.getElementById("painel");
+fetch("/verificar", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ token }),
+})
+.then(res => res.json())
+.then(data => {
+  const c = document.getElementById("conteudo");
 
-        if (data.sucesso) {
-          msg.className = "sucesso";
-          msg.textContent = "Bem-vindo!";
-          painel.style.display = "block";
+  if (!data.sucesso) {
+    c.innerHTML = "<p class='erro'>Usuário não autenticado.</p>";
+    return;
+  }
 
-          document.getElementById("nome").textContent = data.nome;
-          document.getElementById("email").textContent = data.email;
+  c.innerHTML = `
+    <p><strong>Email:</strong> ${data.email}</p>
 
-          const linkIndicacao = `https://renda-compartilhada-production.up.railway.app/cadastro.html?ref=${encodeURIComponent(data.email)}`;
-          document.getElementById("link").value = linkIndicacao;
-        } else {
-          msg.className = "erro";
-          msg.textContent = "Usuário não autenticado.";
-        }
-      })
-      .catch(() => {
-        const msg = document.getElementById("mensagem");
-        msg.className = "erro";
-        msg.textContent = "Erro ao verificar autenticação.";
-      });
+    <h3>Indicados:</h3>
+    <p>1º Nível: ${data.nivel1} indicados → R$ ${data.ganhos1}</p>
+    <p>2º Nível: ${data.nivel2} indicados → R$ ${data.ganhos2}</p>
+    <p>3º Nível: ${data.nivel3} indicados → R$ ${data.ganhos3}</p>
 
-    function copiar() {
-      const link = document.getElementById("link");
-      link.select();
-      document.execCommand("copy");
-      alert("Link copiado!");
+    <h3>Total em Ganhos:</h3>
+    <p style="font-size: 22px; color:green"><strong>R$ ${data.total}</strong></p>
+
+    <h3>Seu link de Indicação:</h3>
+    <input type="text" value="${data.linkIndicacao}" readonly />
+    <button onclick="navigator.clipboard.writeText('${data.linkIndicacao}')">Copiar Link</button>
+
+    <h3>Solicitar Saque</h3>
+    <input type="number" id="valor" placeholder="Valor mínimo R$5,00" /><br/>
+    <input type="text" id="chavePix" placeholder="Sua Chave PIX" /><br/>
+    <button onclick="sacar()">Solicitar Saque</button>
+    <p id="msgSaque"></p>
+  `;
+})
+.catch(() => {
+  document.getElementById("conteudo").innerHTML = "<p class='erro'>Erro ao carregar painel.</p>";
+});
+
+function sacar() {
+  const valor = parseFloat(document.getElementById("valor").value);
+  const chavePix = document.getElementById("chavePix").value;
+  const msg = document.getElementById("msgSaque");
+
+  if (!valor || !chavePix) {
+    msg.style.color = "red";
+    msg.textContent = "Preencha o valor e a chave PIX.";
+    return;
+  }
+
+  fetch("/saque", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, valor, chavePix }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.sucesso) {
+      msg.style.color = "green";
+      msg.textContent = data.mensagem;
+    } else {
+      msg.style.color = "red";
+      msg.textContent = data.erro;
     }
-  </script>
+  })
+  .catch(() => {
+    msg.style.color = "red";
+    msg.textContent = "Erro ao solicitar saque.";
+  });
+}
+</script>
+
 </body>
 </html>
