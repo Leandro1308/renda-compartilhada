@@ -1,58 +1,42 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Login de Usuário</title>
 </head>
 <body>
-  <h1>Login de Usuário</h1>
+  <h1>Login</h1>
 
-  <label for="email">Email:</label>
-  <input type="email" id="email" required />
-  <br />
+  <input type="email" id="email" placeholder="E-mail" required><br><br>
+  <input type="password" id="senha" placeholder="Senha" required><br><br>
 
-  <label for="senha">Senha:</label>
-  <input type="password" id="senha" required />
-  <br />
-
-  <button onclick="fazerLogin()">Entrar</button>
+  <button onclick="login()">Entrar</button>
 
   <p id="mensagem"></p>
 
   <script>
-    function fazerLogin() {
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
+    function login() {
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
 
-      fetch("/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, senha }),
+      fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha })
       })
-        .then((res) => res.json())
-        .then((data) => {
-          const msg = document.getElementById("mensagem");
+      .then(res => res.json())
+      .then(data => {
+        const msg = document.getElementById('mensagem');
+        msg.textContent = data.mensagem || "";
+        msg.style.color = data.sucesso ? 'green' : 'red';
 
-          if (data.token) {
-            // ✅ Salva o token
-            localStorage.setItem("token", data.token);
-            msg.style.color = "green";
-            msg.textContent = "Login realizado com sucesso!";
-            setTimeout(() => {
-              window.location.href = "/painel.html";
-            }, 1000);
-          } else {
-            msg.style.color = "red";
-            msg.textContent = data.erro || "Erro no login.";
-          }
-        })
-        .catch(() => {
-          const msg = document.getElementById("mensagem");
-          msg.style.color = "red";
-          msg.textContent = "Erro ao conectar com o servidor.";
-        });
+        if (data.sucesso) {
+          localStorage.setItem('token', data.token);
+          setTimeout(() => {
+            window.location.href = '/painel.html';
+          }, 1500);
+        }
+      })
     }
   </script>
 </body>
