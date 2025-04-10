@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel do Administrador</title>
+  <style>
+    body {
+      background-color: #f2f2f2;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    .box {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+    .btn {
+      padding: 5px 10px;
+      margin: 5px;
+      cursor: pointer;
+    }
+    .aprovado {
+      background-color: green;
+      color: white;
+    }
+    .rejeitado {
+      background-color: red;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Painel do Administrador</h1>
+  <div id="saques"></div>
+
+  <script>
+    fetch('/saques')
+      .then(res => res.json())
+      .then(data => {
+        const div = document.getElementById('saques');
+        if (data.length === 0) {
+          div.innerHTML = '<p>Nenhum pedido de saque.</p>';
+        } else {
+          data.forEach((s, i) => {
+            const box = document.createElement('div');
+            box.className = 'box';
+            box.innerHTML = `
+              <p><b>Email:</b> ${s.email}</p>
+              <p><b>Valor:</b> R$ ${s.valor.toFixed(2)}</p>
+              <p><b>Status:</b> ${s.status}</p>
+              <button class="btn aprovado" onclick="atualizar(${i}, 'Aprovado')">Aprovar</button>
+              <button class="btn rejeitado" onclick="atualizar(${i}, 'Rejeitado')">Rejeitar</button>
+            `;
+            div.appendChild(box);
+          });
+        }
+      });
+
+    function atualizar(index, status) {
+      fetch('/atualizar-saque', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index, status })
+      })
+      .then(() => location.reload());
+    }
+  </script>
+</body>
+</html>
