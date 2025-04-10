@@ -1,97 +1,90 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Cadastro de Usuário</title>
   <style>
     body {
       background-color: #f2f2f2;
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 100px;
+      padding: 50px;
     }
     .box {
       background: white;
       border-radius: 10px;
       padding: 30px;
       display: inline-block;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 400px;
     }
     input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
+      width: 90%;
+      padding: 8px;
+      margin: 5px 0;
     }
     button {
-      padding: 10px 20px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+      padding: 10px;
     }
-    .erro {
-      color: red;
-    }
-    .sucesso {
-      color: green;
-    }
+    .erro { color: red; }
+    .sucesso { color: green; }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>Cadastro de Usuário</h1>
 
-    <input type="text" id="nome" placeholder="Seu nome completo" required /><br />
-    <input type="email" id="email" placeholder="Seu e-mail" required /><br />
-    <input type="password" id="senha" placeholder="Sua senha" required /><br />
-    <input type="hidden" id="indicadoPor" /><br />
+<div class="box">
+  <h1>Cadastro de Usuário</h1>
 
-    <button onclick="cadastrar()">Cadastrar</button>
+  <input type="text" id="nome" placeholder="Seu Nome Completo"><br>
+  <input type="email" id="email" placeholder="Seu Email"><br>
+  <input type="password" id="senha" placeholder="Crie uma Senha"><br>
 
-    <p id="mensagem"></p>
-  </div>
+  <button onclick="cadastrar()">Cadastrar</button>
 
-  <script>
-    // pegar o email do indicador do link
-    const urlParams = new URLSearchParams(window.location.search);
-    const indicadoPor = urlParams.get('ref');
-    document.getElementById('indicadoPor').value = indicadoPor || '';
+  <p id="mensagem"></p>
+</div>
 
-    function cadastrar() {
-      const nome = document.getElementById("nome").value;
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
-      const indicadoPor = document.getElementById("indicadoPor").value;
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const indicadoPor = urlParams.get('indicador');
 
-      fetch("/cadastro", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ nome, email, senha, indicadoPor }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          const msg = document.getElementById("mensagem");
+function cadastrar() {
+  const nome = document.getElementById('nome').value;
+  const email = document.getElementById('email').value;
+  const senha = document.getElementById('senha').value;
+  const msg = document.getElementById('mensagem');
 
-          if (data.mensagem) {
-            msg.className = "sucesso";
-            msg.textContent = data.mensagem;
-            setTimeout(() => {
-              window.location.href = "/login.html";
-            }, 2000);
-          } else {
-            msg.className = "erro";
-            msg.textContent = data.erro || "Erro ao cadastrar.";
-          }
-        })
-        .catch(() => {
-          const msg = document.getElementById("mensagem");
-          msg.className = "erro";
-          msg.textContent = "Erro ao conectar com o servidor.";
-        });
+  if (!nome || !email || !senha) {
+    msg.style.color = "red";
+    msg.textContent = "Preencha todos os campos.";
+    return;
+  }
+
+  fetch('/cadastro', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome, email, senha, indicadoPor }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.sucesso) {
+      msg.style.color = "green";
+      msg.textContent = data.mensagem;
+      setTimeout(() => {
+        window.location.href = '/login.html';
+      }, 2000);
+    } else {
+      msg.style.color = "red";
+      msg.textContent = data.erro;
     }
-  </script>
+  })
+  .catch(() => {
+    msg.style.color = "red";
+    msg.textContent = "Erro ao realizar cadastro.";
+  });
+}
+</script>
+
 </body>
 </html>
