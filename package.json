@@ -1,17 +1,23 @@
 {
   "name": "renda-compartilhada",
   "version": "1.0.0",
-  "description": "Projeto Renda Compartilhada",
-  "main": "index.js",
+  "description": "API do Renda Compartilhada",
+  "main": "src/index.js",
+  "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
   },
   "keywords": [],
   "author": "Leandro",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "mongoose": "^7.6.1"
+    "mongoose": "^7.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }
