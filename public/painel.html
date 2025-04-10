@@ -8,7 +8,7 @@
       background-color: #f2f2f2;
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 50px;
+      padding: 100px;
     }
     .box {
       background: white;
@@ -16,29 +16,18 @@
       padding: 30px;
       display: inline-block;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      max-width: 600px;
     }
-    .link {
-      background-color: #eee;
-      padding: 10px;
-      word-break: break-all;
-      margin-top: 10px;
-    }
+    .sucesso { color: green; }
+    .erro { color: red; }
+    .link { margin-top: 20px; word-break: break-all; }
     button {
-      margin: 5px;
-      padding: 10px 20px;
-      cursor: pointer;
-      background-color: #4CAF50;
-      border: none;
-      color: white;
-      border-radius: 5px;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    .saldo {
-      font-size: 20px;
       margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -46,56 +35,59 @@
   <div class="box">
     <h1>Painel do Afiliado</h1>
     <p id="mensagem" class="erro">Verificando autenticação...</p>
-    <p class="saldo" id="saldo"></p>
-    <div id="link"></div>
-
-    <button onclick="window.location.href='saque.html'">Solicitar Saque</button>
-    <button onclick="window.location.href='historico.html'">Histórico de Pagamentos</button>
-    <button onclick="logout()">Sair</button>
+    <p id="saldo"></p>
+    <div class="link">
+      <p>Seu link de indicação:</p>
+      <p id="linkIndicacao"></p>
+    </div>
+    <button onclick="solicitarSaque()">Solicitar Saque</button>
+    <p id="retorno"></p>
   </div>
 
-  <script>
-    const token = localStorage.getItem("token");
+<script>
+const token = localStorage.getItem("token");
 
-    if (!token) {
-      window.location.href = "login.html";
-    }
+fetch("/verificar", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ token }),
+})
+.then(res => res.json())
+.then(data => {
+  const msg = document.getElementById("mensagem");
+  const saldo = document.getElementById("saldo");
+  const link = document.getElementById("linkIndicacao");
 
-    fetch("/verificar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-    })
-    .then((res) => res.json())
-    .then((data) => {
-      const msg = document.getElementById("mensagem");
-      const saldo = document.getElementById("saldo");
-      const link = document.getElementById("link");
+  if (data.sucesso) {
+    msg.className = "sucesso";
+    msg.textContent = `Bem-vindo, ${data.email}!`;
+    saldo.textContent = `Saldo disponível: R$ ${data.saldo.toFixed(2)}`;
+    link.textContent = `${window.location.origin}/cadastro.html?ref=${data.email}`;
+  } else {
+    msg.className = "erro";
+    msg.textContent = "Usuário não autenticado.";
+  }
+})
+.catch(() => {
+  document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
+});
 
-      if (data.sucesso) {
-        msg.style.color = "green";
-        msg.textContent = `Bem-vindo, ${data.email}!`;
-
-        saldo.textContent = `Saldo disponível: R$ ${data.saldo.toFixed(2)}`;
-
-        const linkIndicacao = `${window.location.origin}/cadastro.html?ref=${encodeURIComponent(data.email)}`;
-        link.innerHTML = `
-          <p>Seu link de indicação:</p>
-          <div class="link">${linkIndicacao}</div>
-          <button onclick="navigator.clipboard.writeText('${linkIndicacao}')">Copiar Link</button>
-        `;
-      } else {
-        msg.style.color = "red";
-        msg.textContent = "Usuário não autenticado.";
-        localStorage.removeItem("token");
-        setTimeout(() => window.location.href = "login.html", 1500);
-      }
-    });
-
-    function logout() {
-      localStorage.removeItem("token");
-      window.location.href = "login.html";
-    }
-  </script>
+function solicitarSaque() {
+  fetch('/saque', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    const retorno = document.getElementById('retorno');
+    retorno.textContent = data.mensagem;
+    retorno.style.color = data.sucesso ? 'green' : 'red';
+  })
+  .catch(() => {
+    document.getElementById('retorno').textContent = "Erro ao solicitar saque.";
+  });
+}
+</script>
 </body>
 </html>
