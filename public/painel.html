@@ -15,100 +15,87 @@
       border-radius: 10px;
       padding: 30px;
       display: inline-block;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 90%;
-      max-width: 500px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
     }
-    .erro { color: red; }
-    .sucesso { color: green; }
-    input { padding: 5px; width: 90%; margin-bottom: 10px; }
-    button { padding: 10px; margin-top: 10px; }
+    .link {
+      background-color: #eee;
+      padding: 10px;
+      word-break: break-all;
+      margin-top: 10px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .saldo {
+      font-size: 20px;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
-
   <div class="box">
     <h1>Painel do Afiliado</h1>
-    <div id="conteudo">
-      <p>Carregando...</p>
-    </div>
+    <p id="mensagem" class="erro">Verificando autenticação...</p>
+    <p class="saldo" id="saldo"></p>
+    <div id="link"></div>
+
+    <button onclick="window.location.href='saque.html'">Solicitar Saque</button>
+    <button onclick="window.location.href='historico.html'">Histórico de Pagamentos</button>
+    <button onclick="logout()">Sair</button>
   </div>
 
-<script>
-const token = localStorage.getItem("token");
+  <script>
+    const token = localStorage.getItem("token");
 
-fetch("/verificar", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ token }),
-})
-.then(res => res.json())
-.then(data => {
-  const c = document.getElementById("conteudo");
-
-  if (!data.sucesso) {
-    c.innerHTML = "<p class='erro'>Usuário não autenticado.</p>";
-    return;
-  }
-
-  c.innerHTML = `
-    <p><strong>Email:</strong> ${data.email}</p>
-
-    <h3>Indicados:</h3>
-    <p>1º Nível: ${data.nivel1} indicados → R$ ${data.ganhos1}</p>
-    <p>2º Nível: ${data.nivel2} indicados → R$ ${data.ganhos2}</p>
-    <p>3º Nível: ${data.nivel3} indicados → R$ ${data.ganhos3}</p>
-
-    <h3>Total em Ganhos:</h3>
-    <p style="font-size: 22px; color:green"><strong>R$ ${data.total}</strong></p>
-
-    <h3>Seu link de Indicação:</h3>
-    <input type="text" value="${data.linkIndicacao}" readonly />
-    <button onclick="navigator.clipboard.writeText('${data.linkIndicacao}')">Copiar Link</button>
-
-    <h3>Solicitar Saque</h3>
-    <input type="number" id="valor" placeholder="Valor mínimo R$5,00" /><br/>
-    <input type="text" id="chavePix" placeholder="Sua Chave PIX" /><br/>
-    <button onclick="sacar()">Solicitar Saque</button>
-    <p id="msgSaque"></p>
-  `;
-})
-.catch(() => {
-  document.getElementById("conteudo").innerHTML = "<p class='erro'>Erro ao carregar painel.</p>";
-});
-
-function sacar() {
-  const valor = parseFloat(document.getElementById("valor").value);
-  const chavePix = document.getElementById("chavePix").value;
-  const msg = document.getElementById("msgSaque");
-
-  if (!valor || !chavePix) {
-    msg.style.color = "red";
-    msg.textContent = "Preencha o valor e a chave PIX.";
-    return;
-  }
-
-  fetch("/saque", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token, valor, chavePix }),
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.sucesso) {
-      msg.style.color = "green";
-      msg.textContent = data.mensagem;
-    } else {
-      msg.style.color = "red";
-      msg.textContent = data.erro;
+    if (!token) {
+      window.location.href = "login.html";
     }
-  })
-  .catch(() => {
-    msg.style.color = "red";
-    msg.textContent = "Erro ao solicitar saque.";
-  });
-}
-</script>
 
+    fetch("/verificar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      const msg = document.getElementById("mensagem");
+      const saldo = document.getElementById("saldo");
+      const link = document.getElementById("link");
+
+      if (data.sucesso) {
+        msg.style.color = "green";
+        msg.textContent = `Bem-vindo, ${data.email}!`;
+
+        saldo.textContent = `Saldo disponível: R$ ${data.saldo.toFixed(2)}`;
+
+        const linkIndicacao = `${window.location.origin}/cadastro.html?ref=${encodeURIComponent(data.email)}`;
+        link.innerHTML = `
+          <p>Seu link de indicação:</p>
+          <div class="link">${linkIndicacao}</div>
+          <button onclick="navigator.clipboard.writeText('${linkIndicacao}')">Copiar Link</button>
+        `;
+      } else {
+        msg.style.color = "red";
+        msg.textContent = "Usuário não autenticado.";
+        localStorage.removeItem("token");
+        setTimeout(() => window.location.href = "login.html", 1500);
+      }
+    });
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+  </script>
 </body>
 </html>
