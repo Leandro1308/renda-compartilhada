@@ -2,45 +2,95 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Cadastro de Usuário</title>
+  <title>Cadastro de Afiliado</title>
+  <style>
+    body {
+      background-color: #f2f2f2;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    .box {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    input {
+      padding: 10px;
+      margin: 5px;
+      width: 250px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    .erro { color: red; }
+    .sucesso { color: green; }
+  </style>
 </head>
 <body>
-  <h1>Cadastro de Usuário</h1>
 
-  <input type="text" id="nome" placeholder="Nome" required><br><br>
-  <input type="email" id="email" placeholder="E-mail" required><br><br>
-  <input type="password" id="senha" placeholder="Senha" required><br><br>
-  <input type="email" id="indicadoPor" placeholder="E-mail de quem indicou (opcional)"><br><br>
+<div class="box">
+  <h1>Cadastro de Afiliado</h1>
+
+  <input type="text" id="nome" placeholder="Nome completo"><br>
+  <input type="email" id="email" placeholder="Seu e-mail"><br>
+  <input type="password" id="senha" placeholder="Senha"><br>
+  
+  <input type="text" id="indicador" readonly><br>
 
   <button onclick="cadastrar()">Cadastrar</button>
 
   <p id="mensagem"></p>
+</div>
 
-  <script>
-    function cadastrar() {
-      const nome = document.getElementById("nome").value;
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
-      const indicadoPor = document.getElementById("indicadoPor").value;
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const ref = urlParams.get('ref') || 'Sem indicação';
+  document.getElementById('indicador').value = ref;
 
-      fetch('/cadastro', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email, senha, indicadoPor })
-      })
-      .then(res => res.json())
-      .then(data => {
-        const msg = document.getElementById('mensagem');
-        msg.textContent = data.mensagem;
-        msg.style.color = data.sucesso ? 'green' : 'red';
+  function gerarToken() {
+    return Math.random().toString(36).substr(2, 10);
+  }
 
-        if (data.sucesso) {
-          setTimeout(() => {
-            window.location.href = '/login.html';
-          }, 1500);
-        }
-      })
+  function cadastrar() {
+    const nome = document.getElementById('nome').value;
+    const email = document.getElementById('email').value;
+    const senha = document.getElementById('senha').value;
+    const indicadoPor = ref;
+    const token = gerarToken();
+
+    if (!nome || !email || !senha) {
+      document.getElementById('mensagem').textContent = "Preencha todos os campos!";
+      document.getElementById('mensagem').className = 'erro';
+      return;
     }
-  </script>
+
+    fetch("/cadastro", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ nome, email, senha, indicadoPor, token }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if(data.sucesso) {
+        document.getElementById('mensagem').textContent = "Cadastro realizado com sucesso!";
+        document.getElementById('mensagem').className = 'sucesso';
+        setTimeout(() => window.location.href = "/login.html", 1500);
+      } else {
+        document.getElementById('mensagem').textContent = data.mensagem;
+        document.getElementById('mensagem').className = 'erro';
+      }
+    })
+    .catch(() => {
+      document.getElementById('mensagem').textContent = "Erro ao cadastrar.";
+      document.getElementById('mensagem').className = 'erro';
+    });
+  }
+</script>
+
 </body>
 </html>
