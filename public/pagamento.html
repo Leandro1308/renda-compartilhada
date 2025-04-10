@@ -2,13 +2,13 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Pagamento do Afiliado</title>
+  <title>Área Administrativa - Solicitações de Saque</title>
   <style>
     body {
       background-color: #f2f2f2;
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 100px;
+      padding: 50px;
     }
     .box {
       background: white;
@@ -16,76 +16,79 @@
       padding: 30px;
       display: inline-block;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 900px;
     }
-    .saldo {
-      color: green;
-      font-size: 20px;
-      margin-top: 10px;
-    }
-    .msg {
+    table {
+      width: 100%;
+      border-collapse: collapse;
       margin-top: 20px;
-      color: blue;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
     }
     button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 20px;
+      margin: 3px;
+      padding: 5px 10px;
       cursor: pointer;
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      border-radius: 3px;
+    }
+    button.rejeitar {
+      background-color: #f44336;
     }
   </style>
 </head>
 <body>
   <div class="box">
-    <h1>Pagamento do Afiliado</h1>
-    <p class="saldo">Carregando seu saldo...</p>
-    <p>Valor mínimo para saque: R$ 5,00</p>
-    <button onclick="sacar()">Solicitar Saque</button>
-    <p class="msg"></p>
+    <h1>Área do ADMIN - Solicitações de Saque</h1>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Valor</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaSaque"></tbody>
+    </table>
+
+    <button onclick="window.location.href='painel.html'">Voltar ao Painel</button>
   </div>
 
   <script>
-    const token = localStorage.getItem('token');
+    fetch("/saques")
+      .then((res) => res.json())
+      .then((dados) => {
+        const tabela = document.getElementById("tabelaSaque");
+        tabela.innerHTML = dados.map(saque => `
+          <tr>
+            <td>${saque.email}</td>
+            <td>R$ ${saque.valor.toFixed(2)}</td>
+            <td>${saque.status}</td>
+            <td>
+              ${saque.status === "Pendente" ? `
+                <button onclick="aprovar('${saque.id}')">Aprovar</button>
+                <button class="rejeitar" onclick="rejeitar('${saque.id}')">Rejeitar</button>
+              ` : '-'}
+            </td>
+          </tr>
+        `).join("");
+      });
 
-    if (!token) {
-      window.location.href = 'login.html';
+    function aprovar(id) {
+      fetch(`/aprovar-saque/${id}`, { method: "POST" })
+        .then(() => window.location.reload());
     }
 
-    function carregarSaldo() {
-      fetch('/verificar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.sucesso) {
-            document.querySelector('.saldo').textContent = `Seu saldo: R$ ${data.saldo.toFixed(2)}`;
-          } else {
-            document.querySelector('.saldo').textContent = 'Usuário não autenticado.';
-          }
-        });
-    }
-
-    carregarSaldo();
-
-    function sacar() {
-      fetch('/saque', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token })
-      })
-        .then(res => res.json())
-        .then(data => {
-          const msg = document.querySelector('.msg');
-          if (data.sucesso) {
-            msg.style.color = 'green';
-            msg.textContent = data.mensagem;
-            carregarSaldo();
-          } else {
-            msg.style.color = 'red';
-            msg.textContent = data.mensagem;
-          }
-        });
+    function rejeitar(id) {
+      fetch(`/rejeitar-saque/${id}`, { method: "POST" })
+        .then(() => window.location.reload());
     }
   </script>
 </body>
