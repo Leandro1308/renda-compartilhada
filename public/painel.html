@@ -2,13 +2,13 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Painel do Usuário</title>
+  <title>Painel do Afiliado</title>
   <style>
     body {
       background-color: #f2f2f2;
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 50px;
+      padding: 100px;
     }
     .box {
       background: white;
@@ -17,38 +17,37 @@
       display: inline-block;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
-    .erro {
-      color: red;
-    }
     .sucesso {
       color: green;
+      font-size: 18px;
+      margin-bottom: 20px;
     }
-    .link-indicacao {
-      font-size: 14px;
-      margin-top: 20px;
+    #linkIndicacao {
+      font-weight: bold;
+      color: #2c3e50;
       background: #f0f0f0;
       padding: 10px;
       border-radius: 8px;
-      word-break: break-word;
+      display: inline-block;
+      margin-top: 10px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 14px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <div class="box">
-    <h1>Painel do Usuário</h1>
-    <p id="mensagem">Verificando autenticação...</p>
-    <div id="dadosUsuario" style="display:none;">
-      <p><strong>Nome:</strong> <span id="nome"></span></p>
-      <p><strong>Email:</strong> <span id="email"></span></p>
-      <p><strong>1º Nível:</strong> <span id="nivel1"></span> indicados - R$ <span id="ganho1"></span></p>
-      <p><strong>2º Nível:</strong> <span id="nivel2"></span> indicados - R$ <span id="ganho2"></span></p>
-      <p><strong>3º Nível:</strong> <span id="nivel3"></span> indicados - R$ <span id="ganho3"></span></p>
-      <p><strong>Total de Ganhos:</strong> R$ <span id="ganhoTotal"></span></p>
-      <div class="link-indicacao">
-        <strong>Seu link de indicação:</strong><br />
-        <span id="linkIndicacao"></span>
-      </div>
-    </div>
+    <h1>Painel do Afiliado</h1>
+    <p id="mensagem" class="sucesso">Verificando autenticação...</p>
+    <p id="linkContainer" style="display: none;">
+      Seu link de indicação:<br>
+      <span id="linkIndicacao"></span><br>
+      <button onclick="copiarLink()">Copiar link</button>
+    </p>
   </div>
 
   <script>
@@ -56,55 +55,35 @@
 
     fetch("/verificar", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ token })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
     })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.sucesso) {
-        document.getElementById("mensagem").textContent = "Usuário não autenticado.";
-        return;
-      }
+      .then(res => res.json())
+      .then(data => {
+        const msg = document.getElementById("mensagem");
+        const linkContainer = document.getElementById("linkContainer");
+        const linkIndicacao = document.getElementById("linkIndicacao");
 
-      // Aqui carregamos os dados do usuário
-      fetch("/usuarios.json")
-        .then(res => res.json())
-        .then(usuarios => {
-          const usuario = usuarios.find(u => u.token === token);
-          if (!usuario) {
-            document.getElementById("mensagem").textContent = "Usuário não encontrado.";
-            return;
-          }
+        if (data.sucesso) {
+          msg.innerHTML = `Bem-vindo, ${data.email}!`;
+          const link = `https://renda-compartilhada-production.up.railway.app/cadastro.html?ref=${encodeURIComponent(data.email)}`;
+          linkIndicacao.textContent = link;
+          linkContainer.style.display = "block";
+        } else {
+          msg.className = "erro";
+          msg.textContent = "Usuário não autenticado.";
+        }
+      })
+      .catch(() => {
+        document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
+      });
 
-          const nivel1 = usuarios.filter(u => u.indicadoPor === usuario.token);
-          const nivel2 = usuarios.filter(u => nivel1.some(n1 => u.indicadoPor === n1.token));
-          const nivel3 = usuarios.filter(u => nivel2.some(n2 => u.indicadoPor === n2.token));
-
-          const ganho1 = nivel1.length * 20;
-          const ganho2 = nivel2.length * 3.50;
-          const ganho3 = nivel3.length * 1.50;
-
-          document.getElementById("mensagem").style.display = "none";
-          document.getElementById("dadosUsuario").style.display = "block";
-
-          document.getElementById("nome").textContent = usuario.nome;
-          document.getElementById("email").textContent = usuario.email;
-          document.getElementById("nivel1").textContent = nivel1.length;
-          document.getElementById("nivel2").textContent = nivel2.length;
-          document.getElementById("nivel3").textContent = nivel3.length;
-          document.getElementById("ganho1").textContent = ganho1.toFixed(2);
-          document.getElementById("ganho2").textContent = ganho2.toFixed(2);
-          document.getElementById("ganho3").textContent = ganho3.toFixed(2);
-          document.getElementById("ganhoTotal").textContent = (ganho1 + ganho2 + ganho3).toFixed(2);
-          document.getElementById("linkIndicacao").textContent =
-            `https://seusite.com/cadastro.html?ref=${usuario.token}`;
-        });
-    })
-    .catch(() => {
-      document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
-    });
+    function copiarLink() {
+      const link = document.getElementById("linkIndicacao").textContent;
+      navigator.clipboard.writeText(link)
+        .then(() => alert("Link copiado com sucesso!"))
+        .catch(() => alert("Erro ao copiar o link."));
+    }
   </script>
 </body>
 </html>
