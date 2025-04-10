@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Saque de Ganhos</title>
+  <style>
+    body {
+      background-color: #f2f2f2;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 100px;
+    }
+    .box {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .erro { color: red; }
+    .sucesso { color: green; }
+  </style>
+</head>
+<body>
+
+  <div class="box">
+    <h1>Solicitar Saque</h1>
+
+    <input type="number" id="valor" placeholder="Valor do saque (mínimo R$5)" min="5" /><br />
+    <input type="text" id="chavePix" placeholder="Sua chave Pix" /><br />
+
+    <button onclick="solicitarSaque()">Solicitar</button>
+
+    <p id="mensagem"></p>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Você precisa estar logado.");
+      window.location.href = "/login.html";
+    }
+
+    function solicitarSaque() {
+      const valor = parseFloat(document.getElementById("valor").value);
+      const chavePix = document.getElementById("chavePix").value;
+      const msg = document.getElementById("mensagem");
+
+      if (isNaN(valor) || valor < 5 || !chavePix) {
+        msg.className = "erro";
+        msg.textContent = "Informe um valor acima de R$5 e a chave Pix.";
+        return;
+      }
+
+      fetch("/saque", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, valor, chavePix }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.sucesso) {
+            msg.className = "sucesso";
+            msg.textContent = data.mensagem;
+          } else {
+            msg.className = "erro";
+            msg.textContent = data.erro || "Erro ao solicitar saque.";
+          }
+        })
+        .catch(() => {
+          msg.className = "erro";
+          msg.textContent = "Erro ao conectar com o servidor.";
+        });
+    }
+  </script>
+
+</body>
+</html>
