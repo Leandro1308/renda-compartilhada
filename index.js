@@ -3,7 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,97 +15,103 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Carregar usuários
-const getUsuarios = () => {
-  return JSON.parse(fs.readFileSync(path.join(__dirname, 'usuarios.json'), 'utf-8'));
+const USUARIOS_PATH = path.join(__dirname, 'usuarios.json');
+
+const lerUsuarios = () => {
+  if (!fs.existsSync(USUARIOS_PATH)) return [];
+  const dados = fs.readFileSync(USUARIOS_PATH);
+  return JSON.parse(dados);
 };
 
-// Salvar usuários
-const saveUsuarios = (usuarios) => {
-  fs.writeFileSync(path.join(__dirname, 'usuarios.json'), JSON.stringify(usuarios, null, 2));
+const salvarUsuarios = (usuarios) => {
+  fs.writeFileSync(USUARIOS_PATH, JSON.stringify(usuarios, null, 2));
 };
 
-// LOGIN
-app.post('/login', (req, res) => {
-  const { email, senha } = req.body;
-  const usuarios = getUsuarios();
-  const usuario = usuarios.find(u => u.email === email && u.senha === senha);
-
-  if (usuario) {
-    res.status(200).json({ sucesso: true, token: usuario.token });
-  } else {
-    res.status(401).json({ sucesso: false, mensagem: 'Credenciais inválidas.' });
-  }
-});
-
-// VERIFICAR
-app.post('/verificar', (req, res) => {
-  const { token } = req.body;
-  const usuarios = getUsuarios();
-  const usuario = usuarios.find(u => u.token === token);
-
-  if (usuario) {
-    res.status(200).json({
-      sucesso: true,
-      nome: usuario.nome,
-      email: usuario.email,
-      saldo: usuario.saldo || 0,
-      statusSaque: usuario.statusSaque || 'Nenhum'
-    });
-  } else {
-    res.status(401).json({ sucesso: false });
-  }
-});
-
-// CADASTRO
+// Cadastro
 app.post('/cadastro', (req, res) => {
   const { nome, email, senha, indicadoPor } = req.body;
-  const usuarios = getUsuarios();
+  const usuarios = lerUsuarios();
 
   if (usuarios.find(u => u.email === email)) {
     return res.status(400).json({ sucesso: false, mensagem: 'Email já cadastrado.' });
   }
 
+  const token = crypto.randomBytes(16).toString('hex');
+
   const novoUsuario = {
     nome,
     email,
     senha,
-    token: uuidv4(),
-    indicadoPor: indicadoPor || null,
+    token,
     saldo: 0,
-    statusSaque: 'Nenhum'
+    statusSaque: 'Nenhum',
+    indicadoPor: indicadoPor || null,
   };
 
-  usuarios.push(novoUsuario);
-
-  // Creditar 10 para o indicante se existir
+  // vincular indicado
   if (indicadoPor) {
-    const indicante = usuarios.find(u => u.email === indicadoPor);
-    if (indicante) {
-      indicante.saldo += 10;
+    const indicador = usuarios.find(u => u.email === indicadoPor);
+    if (indicador) {
+      indicador.saldo += 1; // comissão simbólica de R$1 por cadastro
     }
   }
 
-  saveUsuarios(usuarios);
-  res.status(201).json({ sucesso: true, mensagem: 'Cadastro realizado!' });
+  usuarios.push(novoUsuario);
+  salvarUsuarios(usuarios);
+
+  res.json({ sucesso: true, mensagem: 'Cadastro realizado com sucesso!' });
 });
 
-// SAQUE
-app.post('/sacar', (req, res) => {
-  const { token } = req.body;
-  const usuarios = getUsuarios();
-  const usuario = usuarios.find(u => u.token === token);
+// Login
+app.post('/login', (req, res) => {
+  const { email, senha } = req.body;
+  const usuarios = lerUsuarios();
 
-  if (!usuario) return res.status(401).json({ sucesso: false });
-
-  if (usuario.saldo < 100) {
-    return res.status(400).json({ sucesso: false, mensagem: 'Saldo insuficiente.' });
+  const usuario = usuarios.find(u => u.email === email && u.senha === senha);
+  if (!usuario) {
+    return res.status(401).json({ sucesso: false, mensagem: 'Credenciais inválidas.' });
   }
 
-  usuario.statusSaque = 'Pendente';
+  res.json({ sucesso: true, mensagem: 'Login realizado com sucesso!', token: usuario.token });
+});
 
-  saveUsuarios(usuarios);
-  res.status(200).json({ sucesso: true, mensagem: 'Saque solicitado com sucesso!' });
+// Verificação
+app.post('/verificar', (req, res) => {
+  const { token } = req.body;
+  const usuarios = lerUsuarios();
+
+  const usuario = usuarios.find(u => u.token === token);
+  if (!usuario) {
+    return res.status(401).json({ sucesso: false });
+  }
+
+  res.json({
+    sucesso: true,
+    nome: usuario.nome,
+    email: usuario.email,
+    saldo: usuario.saldo,
+    statusSaque: usuario.statusSaque
+  });
+});
+
+// Solicitação de Saque
+app.post('/sacar', (req, res) => {
+  const { token } = req.body;
+  const usuarios = lerUsuarios();
+
+  const usuario = usuarios.find(u => u.token === token);
+  if (!usuario) {
+    return res.status(401).json({ sucesso: false, mensagem: 'Usuário não encontrado.' });
+  }
+
+  if (usuario.saldo < 10) {
+    return res.json({ sucesso: false, mensagem: 'Saldo insuficiente (mínimo R$10,00).' });
+  }
+
+  usuario.statusSaque = 'Solicitado';
+  salvarUsuarios(usuarios);
+
+  res.json({ sucesso: true, mensagem: 'Solicitação de saque enviada com sucesso!' });
 });
 
 app.listen(PORT, () => {
