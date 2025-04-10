@@ -2,65 +2,88 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Painel do Usuário</title>
+  <title>Painel do Afiliado</title>
+  <style>
+    body {
+      background-color: #f2f2f2;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    .box {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .erro { color: red; }
+    .sucesso { color: green; }
+    .link { background: #eee; padding: 10px; border-radius: 5px; margin: 10px 0; word-break: break-all; }
+    button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+  </style>
 </head>
 <body>
-  <h1>Bem-vindo ao seu Painel</h1>
 
-  <p id="dados"></p>
+<div class="box">
+  <h1>Painel do Afiliado</h1>
+  <p id="mensagem" class="erro">Verificando autenticação...</p>
 
-  <button onclick="solicitarSaque()">Solicitar Saque</button><br><br>
-  <button onclick="logout()">Sair</button>
+  <div id="info" style="display:none;">
+    <p><strong>Nome:</strong> <span id="nome"></span></p>
+    <p><strong>Email:</strong> <span id="email"></span></p>
+    <p><strong>Saldo disponível:</strong> R$ <span id="saldo"></span></p>
+    <p><strong>Status do saque:</strong> <span id="status"></span></p>
 
-  <script>
-    const token = localStorage.getItem('token');
+    <h3>Seu link de indicação:</h3>
+    <div class="link" id="link"></div>
+    <button onclick="copiarLink()">Copiar link</button>
+    <button onclick="solicitarSaque()">Solicitar saque</button>
+  </div>
+</div>
 
-    if (!token) {
-      window.location.href = '/login.html';
-    }
+<script>
+  const token = localStorage.getItem("token");
 
-    fetch('/verificar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.sucesso) {
-        window.location.href = '/login.html';
-        return;
+  fetch("/verificar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      const msg = document.getElementById("mensagem");
+      const info = document.getElementById("info");
+
+      if (data.sucesso) {
+        msg.style.display = "none";
+        info.style.display = "block";
+
+        document.getElementById("nome").textContent = data.nome;
+        document.getElementById("email").textContent = data.email;
+        document.getElementById("saldo").textContent = data.saldo.toFixed(2);
+        document.getElementById("status").textContent = data.statusSaque;
+
+        const link = `https://renda-compartilhada-production.up.railway.app/cadastro.html?ref=${data.email}`;
+        document.getElementById("link").textContent = link;
+
+        window.copiarLink = () => {
+          navigator.clipboard.writeText(link);
+          alert("Link copiado com sucesso!");
+        }
+
+        window.solicitarSaque = () => {
+          alert("Pedido de saque enviado! Aguarde análise.");
+        }
+
+      } else {
+        msg.textContent = "Usuário não autenticado.";
       }
-
-      const linkIndicacao = `${window.location.origin}/public/cadastro.html?indicador=${data.email}`;
-
-      document.getElementById('dados').innerHTML = `
-        Nome: ${data.nome}<br>
-        Email: ${data.email}<br>
-        Saldo: R$ ${data.saldo.toFixed(2)}<br>
-        Status do Saque: ${data.statusSaque}<br>
-        <br>
-        Seu link de indicação:<br>
-        <a href="${linkIndicacao}">${linkIndicacao}</a>
-      `;
     })
+    .catch(() => {
+      document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
+    });
+</script>
 
-    function solicitarSaque() {
-      fetch('/sacar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token })
-      })
-      .then(res => res.json())
-      .then(data => {
-        alert(data.mensagem);
-        location.reload();
-      })
-    }
-
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/login.html';
-    }
-  </script>
 </body>
 </html>
