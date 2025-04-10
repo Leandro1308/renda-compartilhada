@@ -1,23 +1,40 @@
 import express from 'express';
 import cors from 'cors';
-import { v4 as uuidv4 } from 'uuid';
 import { MongoClient } from 'mongodb';
-import dotenv from 'dotenv';
+import { config } from 'dotenv';
 
-dotenv.config();
+config(); // Carrega as variáveis do .env
 
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
 const client = new MongoClient(process.env.MONGO_URL);
-await client.connect();
-const db = client.db('renda-compartilhada');
+
+async function conectarBanco() {
+  try {
+    await client.connect();
+    console.log('MongoDB conectado com sucesso!');
+  } catch (error) {
+    console.error('Erro ao conectar no MongoDB:', error);
+  }
+}
+conectarBanco();
+
+const database = client.db('bancodedados'); // nome do banco
+const collection = database.collection('dados'); // nome da coleção
 
 app.get('/', (req, res) => {
-  res.send('Servidor rodando na porta 8080');
+  res.send('API Renda Compartilhada funcionando!');
 });
 
-app.listen(8080, () => {
-  console.log('Servidor rodando na porta 8080');
+app.post('/adicionar', async (req, res) => {
+  const dados = req.body;
+  await collection.insertOne(dados);
+  res.send('Dados salvos com sucesso!');
+});
+
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
