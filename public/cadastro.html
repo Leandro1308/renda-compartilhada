@@ -1,93 +1,45 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Cadastro de Usuário</title>
-  <style>
-    body {
-      background-color: #f2f2f2;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 100px;
-    }
-    .box {
-      background: white;
-      border-radius: 10px;
-      padding: 30px;
-      display: inline-block;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    input {
-      display: block;
-      margin: 10px auto;
-      padding: 8px;
-      width: 250px;
-    }
-    button {
-      padding: 10px 20px;
-    }
-    .erro {
-      color: red;
-    }
-    .sucesso {
-      color: green;
-    }
-  </style>
 </head>
 <body>
-  <div class="box">
-    <h1>Cadastro de Usuário</h1>
+  <h1>Cadastro de Usuário</h1>
 
-    <input type="text" id="nome" placeholder="Nome completo" required />
-    <input type="email" id="email" placeholder="Seu e-mail" required />
-    <input type="password" id="senha" placeholder="Senha" required />
-    <input type="text" id="indicador" placeholder="Código do indicador" readonly />
+  <input type="text" id="nome" placeholder="Nome" required><br><br>
+  <input type="email" id="email" placeholder="E-mail" required><br><br>
+  <input type="password" id="senha" placeholder="Senha" required><br><br>
+  <input type="email" id="indicadoPor" placeholder="E-mail de quem indicou (opcional)"><br><br>
 
-    <button onclick="cadastrar()">Cadastrar</button>
+  <button onclick="cadastrar()">Cadastrar</button>
 
-    <p id="mensagem"></p>
-  </div>
+  <p id="mensagem"></p>
 
   <script>
-    // Captura código de indicação da URL (se existir)
-    const urlParams = new URLSearchParams(window.location.search);
-    const ref = urlParams.get("ref");
-    if (ref) {
-      document.getElementById("indicador").value = ref;
-    }
-
     function cadastrar() {
       const nome = document.getElementById("nome").value;
       const email = document.getElementById("email").value;
       const senha = document.getElementById("senha").value;
-      const indicadoPor = document.getElementById("indicador").value;
+      const indicadoPor = document.getElementById("indicadoPor").value;
 
-      fetch("/cadastro", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ nome, email, senha, indicadoPor }),
+      fetch('/cadastro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email, senha, indicadoPor })
       })
-        .then(res => res.json())
-        .then(data => {
-          const msg = document.getElementById("mensagem");
-          if (data.mensagem) {
-            msg.className = "sucesso";
-            msg.textContent = data.mensagem;
-            setTimeout(() => {
-              window.location.href = "/login.html";
-            }, 1500);
-          } else {
-            msg.className = "erro";
-            msg.textContent = data.erro || "Erro ao cadastrar.";
-          }
-        })
-        .catch(() => {
-          const msg = document.getElementById("mensagem");
-          msg.className = "erro";
-          msg.textContent = "Erro ao conectar com o servidor.";
-        });
+      .then(res => res.json())
+      .then(data => {
+        const msg = document.getElementById('mensagem');
+        msg.textContent = data.mensagem;
+        msg.style.color = data.sucesso ? 'green' : 'red';
+
+        if (data.sucesso) {
+          setTimeout(() => {
+            window.location.href = '/login.html';
+          }, 1500);
+        }
+      })
     }
   </script>
 </body>
