@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Painel do Administrador</title>
+  <title>Painel Admin - Saques</title>
   <style>
     body {
       background-color: #f2f2f2;
@@ -10,65 +10,78 @@
       text-align: center;
       padding: 50px;
     }
-    .box {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
+    h1 {
       margin-bottom: 20px;
-      display: inline-block;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 300px;
     }
-    .btn {
+    table {
+      margin: auto;
+      width: 90%;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    th {
+      background: #eee;
+    }
+    button {
       padding: 5px 10px;
-      margin: 5px;
+      margin: 2px;
       cursor: pointer;
-    }
-    .aprovado {
-      background-color: green;
-      color: white;
-    }
-    .rejeitado {
-      background-color: red;
-      color: white;
     }
   </style>
 </head>
 <body>
-  <h1>Painel do Administrador</h1>
-  <div id="saques"></div>
+  <h1>Admin - Controle de Saques</h1>
 
-  <script>
-    fetch('/saques')
-      .then(res => res.json())
-      .then(data => {
-        const div = document.getElementById('saques');
-        if (data.length === 0) {
-          div.innerHTML = '<p>Nenhum pedido de saque.</p>';
-        } else {
-          data.forEach((s, i) => {
-            const box = document.createElement('div');
-            box.className = 'box';
-            box.innerHTML = `
-              <p><b>Email:</b> ${s.email}</p>
-              <p><b>Valor:</b> R$ ${s.valor.toFixed(2)}</p>
-              <p><b>Status:</b> ${s.status}</p>
-              <button class="btn aprovado" onclick="atualizar(${i}, 'Aprovado')">Aprovar</button>
-              <button class="btn rejeitado" onclick="atualizar(${i}, 'Rejeitado')">Rejeitar</button>
-            `;
-            div.appendChild(box);
-          });
-        }
+  <table>
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Valor</th>
+        <th>Data</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaSaques"></tbody>
+  </table>
+
+<script>
+  fetch('/saques.json')
+    .then(res => res.json())
+    .then(saques => {
+      const tabela = document.getElementById('tabelaSaques');
+
+      saques.forEach((s, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${s.email}</td>
+          <td>R$ ${s.valor.toFixed(2)}</td>
+          <td>${s.data}</td>
+          <td>${s.status}</td>
+          <td>
+            ${s.status === 'Pendente' ? `
+              <button onclick="alterarStatus(${index}, 'Aprovado')">Aprovar</button>
+              <button onclick="alterarStatus(${index}, 'Recusado')">Recusar</button>
+            ` : '-'}
+          </td>
+        `;
+        tabela.appendChild(tr);
       });
+    });
 
-    function atualizar(index, status) {
-      fetch('/atualizar-saque', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ index, status })
-      })
-      .then(() => location.reload());
-    }
-  </script>
+  function alterarStatus(index, novoStatus) {
+    fetch('/alterar-saque', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ index, status: novoStatus })
+    })
+    .then(() => location.reload());
+  }
+</script>
+
 </body>
 </html>
