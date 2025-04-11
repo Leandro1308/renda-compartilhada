@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "id": 1,
+    "usuario_id": 1,
+    "valor": 50.00,
+    "data": "2025-04-10",
+    "status": "aprovado"
+  }
+]
