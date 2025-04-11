@@ -1,20 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
-const path = './src/anuncios.json';
+const path = require('path');
+
+const filePath = path.join(__dirname, 'anuncios.json');
+
+const readData = () => JSON.parse(fs.readFileSync(filePath));
 
 router.get('/', (req, res) => {
-  const anuncios = JSON.parse(fs.readFileSync(path));
-  res.json(anuncios);
+  res.json(readData());
 });
 
-router.post('/novo', (req, res) => {
-  const anuncios = JSON.parse(fs.readFileSync(path));
-  const anuncio = req.body;
-  anuncio.id = Date.now();
-  anuncios.push(anuncio);
-  fs.writeFileSync(path, JSON.stringify(anuncios, null, 2));
-  res.json({ mensagem: 'Anúncio publicado!' });
+router.post('/', (req, res) => {
+  const anuncios = readData();
+  anuncios.push(req.body);
+  fs.writeFileSync(filePath, JSON.stringify(anuncios, null, 2));
+  res.status(201).send('Anúncio criado com sucesso!');
 });
 
 module.exports = router;
