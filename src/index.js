@@ -1,22 +1,26 @@
-const express = require('express')
-const mongoose = require('mongoose')
+const express = require('express');
+const cors = require('cors');
+const app = express();
+require('dotenv').config();
 
-const app = express()
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
 
-app.use(express.json())
+// Rotas principais
+const usuarios = require('./usuarios');
+const saques = require('./saques');
+const pagamentos = require('./pagamentos');
+const cursos = require('./cursos');
+const anuncios = require('./anuncios');
 
-const PORT = process.env.PORT || 8080
-const MONGODB_URI = process.env.MONGODB_URI
+app.use('/usuarios', usuarios);
+app.use('/saques', saques);
+app.use('/pagamentos', pagamentos);
+app.use('/cursos', cursos);
+app.use('/anuncios', anuncios);
 
-// Conexão com MongoDB
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('Conectado ao MongoDB com sucesso!'))
-  .catch((error) => console.log('Erro ao conectar ao MongoDB:', error))
-
-app.get('/', (req, res) => {
-  res.send('API está funcionando perfeitamente!')
-})
-
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`)
-})
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
