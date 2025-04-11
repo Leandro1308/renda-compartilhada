@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": 1,
+    "usuarioId": 1,
+    "valor": 50,
+    "data": "2024-04-10T20:00:00.000Z",
+    "status": "aprovado"
+  },
+  {
+    "id": 2,
+    "usuarioId": 2,
+    "valor": 50,
+    "data": "2024-04-11T15:00:00.000Z",
+    "status": "pendente"
+  }
+]
