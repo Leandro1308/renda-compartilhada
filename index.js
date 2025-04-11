@@ -1,16 +1,14 @@
 const express = require('express');
-const app = express();
 const path = require('path');
-
+const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rotas principais
-const usuarios = require('./src/usuarios');
-const saques = require('./src/saques');
-const pagamentos = require('./src/pagamentos');
-const cursos = require('./src/cursos');
-const anuncios = require('./src/anuncios');
+const usuarios = require('./usuarios');
+const saques = require('./saques');
+const pagamentos = require('./pagamentos');
+const cursos = require('./cursos');
+const anuncios = require('./anuncios');
 
 app.use('/usuarios', usuarios);
 app.use('/saques', saques);
