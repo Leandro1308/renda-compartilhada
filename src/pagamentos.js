@@ -1,21 +1,42 @@
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
-const path = './src/pagamentos.json';
+const path = require('path');
 
+const pagamentosFilePath = path.join(__dirname, 'pagamentos.json');
+
+// Função para ler os pagamentos
+function lerPagamentos() {
+  const data = fs.readFileSync(pagamentosFilePath);
+  return JSON.parse(data);
+}
+
+// Função para salvar os pagamentos
+function salvarPagamentos(pagamentos) {
+  fs.writeFileSync(pagamentosFilePath, JSON.stringify(pagamentos, null, 2));
+}
+
+// Listar todos os pagamentos
 router.get('/', (req, res) => {
-  const pagamentos = JSON.parse(fs.readFileSync(path));
+  const pagamentos = lerPagamentos();
   res.json(pagamentos);
 });
 
-router.post('/registro', (req, res) => {
-  const pagamentos = JSON.parse(fs.readFileSync(path));
-  const pagamento = req.body;
-  pagamento.id = Date.now();
-  pagamento.status = 'Confirmado';
-  pagamentos.push(pagamento);
-  fs.writeFileSync(path, JSON.stringify(pagamentos, null, 2));
-  res.json({ mensagem: 'Pagamento registrado!' });
+// Registrar novo pagamento
+router.post('/', (req, res) => {
+  const { usuario, valor, data } = req.body;
+
+  if (!usuario || !valor || !data) {
+    return res.status(400).json({ mensagem: 'Preencha todos os campos.' });
+  }
+
+  const pagamentos = lerPagamentos();
+
+  pagamentos.push({ usuario, valor, data });
+
+  salvarPagamentos(pagamentos);
+
+  res.status(201).json({ mensagem: 'Pagamento registrado com sucesso.' });
 });
 
 module.exports = router;
