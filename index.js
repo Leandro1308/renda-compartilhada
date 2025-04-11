@@ -1,20 +1,21 @@
+// Estrutura inicial da API do Clube da Mente
+
 const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-
-dotenv.config();
-
 const app = express();
-
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log('Conectado ao MongoDB'))
-  .catch((err) => console.log(err));
+// Rotas principais
+const usuarios = require('./src/usuarios');
+const saques = require('./src/saques');
+const pagamentos = require('./src/pagamentos');
+const cursos = require('./src/cursos');
+const anuncios = require('./src/anuncios');
 
-app.get('/', (req, res) => {
-  res.send('API está funcionando perfeitamente!');
-});
+app.use('/usuarios', usuarios);
+app.use('/saques', saques);
+app.use('/pagamentos', pagamentos);
+app.use('/cursos', cursos);
+app.use('/anuncios', anuncios);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
