@@ -1,21 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
-const path = './src/saques.json';
+const path = require('path');
+
+const filePath = path.join(__dirname, 'saques.json');
+
+const readData = () => JSON.parse(fs.readFileSync(filePath));
 
 router.get('/', (req, res) => {
-  const saques = JSON.parse(fs.readFileSync(path));
-  res.json(saques);
+  res.json(readData());
 });
 
-router.post('/solicitar', (req, res) => {
-  const saques = JSON.parse(fs.readFileSync(path));
-  const saque = req.body;
-  saque.id = Date.now();
-  saque.status = 'Pendente';
-  saques.push(saque);
-  fs.writeFileSync(path, JSON.stringify(saques, null, 2));
-  res.json({ mensagem: 'Saque solicitado com sucesso!' });
+router.post('/', (req, res) => {
+  const saques = readData();
+  saques.push(req.body);
+  fs.writeFileSync(filePath, JSON.stringify(saques, null, 2));
+  res.status(201).send('Saque solicitado com sucesso!');
 });
 
 module.exports = router;
