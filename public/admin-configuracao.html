@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Configurações</title>
+</head>
+<body>
+  <h1>Configurações da Assinatura</h1>
+
+  <label>Valor da Assinatura:</label><br>
+  <input type="number" id="valorAssinatura"><br><br>
+
+  <label>Periodicidade:</label><br>
+  <select id="periodicidade">
+    <option value="semanal">Semanal</option>
+    <option value="mensal">Mensal</option>
+    <option value="anual">Anual</option>
+  </select><br><br>
+
+  <label>Valor mínimo para saque:</label><br>
+  <input type="number" id="valorMinimoSaque"><br><br>
+
+  <button onclick="salvar()">Salvar</button>
+  <p id="msg"></p>
+
+<script>
+fetch('/configuracao')
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('valorAssinatura').value = data.valorAssinatura;
+    document.getElementById('periodicidade').value = data.periodicidade;
+    document.getElementById('valorMinimoSaque').value = data.valorMinimoSaque;
+  });
+
+function salvar() {
+  fetch('/configuracao', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      valorAssinatura: parseFloat(document.getElementById('valorAssinatura').value),
+      periodicidade: document.getElementById('periodicidade').value,
+      valorMinimoSaque: parseFloat(document.getElementById('valorMinimoSaque').value),
+    })
+  })
+  .then(() => document.getElementById('msg').textContent = "Salvo com sucesso!")
+}
+</script>
+
+</body>
+</html>
