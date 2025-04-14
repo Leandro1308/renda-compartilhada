@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cadastro de Cursos</title>
+  <style>
+    body {
+      background: #f4f4f4;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 90%;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 15px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    .mensagem {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Cadastrar Novo Curso</h1>
+    <input type="text" id="titulo" placeholder="Título do Curso" required />
+    <textarea id="descricao" placeholder="Descrição" rows="4"></textarea>
+    <input type="url" id="url" placeholder="Link do Curso (YouTube, PDF, etc.)" required />
+    <button onclick="cadastrarCurso()">Cadastrar</button>
+
+    <p class="mensagem" id="mensagem"></p>
+  </div>
+
+  <script>
+    function cadastrarCurso() {
+      const titulo = document.getElementById('titulo').value;
+      const descricao = document.getElementById('descricao').value;
+      const url = document.getElementById('url').value;
+      const msg = document.getElementById('mensagem');
+
+      if (!titulo || !url) {
+        msg.style.color = 'red';
+        msg.textContent = 'Preencha todos os campos obrigatórios.';
+        return;
+      }
+
+      fetch('/cursos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titulo, descricao, url })
+      })
+      .then(res => res.json())
+      .then(data => {
+        msg.style.color = 'green';
+        msg.textContent = 'Curso cadastrado com sucesso!';
+        document.getElementById('titulo').value = '';
+        document.getElementById('descricao').value = '';
+        document.getElementById('url').value = '';
+      })
+      .catch(() => {
+        msg.style.color = 'red';
+        msg.textContent = 'Erro ao cadastrar curso.';
+      });
+    }
+  </script>
+
+</body>
+</html>
