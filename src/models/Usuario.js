@@ -14,6 +14,8 @@ const UsuarioSchema = new mongoose.Schema({
   },
   saldo: { type: Number, default: 0 },
   statusSaque: { type: String, default: 'nenhum' },
+  statusAssinatura: { type: String, enum: ['ativo', 'inativo'], default: 'inativo' },
+  renovacaoAutomatica: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('Usuario', UsuarioSchema);
