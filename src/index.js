@@ -10,6 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+// ROTAS
 const usuarios = require('./usuarios');
 const saques = require('./saques');
 const pagamentos = require('./pagamentos');
