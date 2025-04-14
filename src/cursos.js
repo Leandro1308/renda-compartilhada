@@ -1,21 +1,29 @@
 const express = require('express');
+const Curso = require('./models/Curso');
+const auth = require('./middleware/auth');
+
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 
-const filePath = path.join(__dirname, 'cursos.json');
-
-const readData = () => JSON.parse(fs.readFileSync(filePath));
-
-router.get('/', (req, res) => {
-  res.json(readData());
+// Listar Cursos (disponível pra aluno logado)
+router.get('/', auth, async (req, res) => {
+  const cursos = await Curso.find().sort({ criadoEm: -1 });
+  res.json(cursos);
 });
 
-router.post('/', (req, res) => {
-  const cursos = readData();
-  cursos.push(req.body);
-  fs.writeFileSync(filePath, JSON.stringify(cursos, null, 2));
-  res.status(201).send('Curso adicionado com sucesso!');
+// Criar Curso (Admin manual por enquanto)
+router.post('/criar', async (req, res) => {
+  const { titulo, descricao, tipo, url } = req.body;
+
+  const novoCurso = new Curso({
+    titulo,
+    descricao,
+    tipo,
+    url
+  });
+
+  await novoCurso.save();
+
+  res.status(201).json({ mensagem: 'Curso cadastrado com sucesso' });
 });
 
 module.exports = router;
