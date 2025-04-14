@@ -25,11 +25,31 @@ router.post('/cadastro', async (req, res) => {
 
     await novoUsuario.save();
 
+    // Adicionar como indicado
     if (indicadoPor) {
       const indicante = await Usuario.findById(indicadoPor);
       if (indicante) {
         indicante.indicados.push(novoUsuario._id);
         await indicante.save();
+      }
+    }
+
+    // PAGAMENTO DAS COMISSÕES MMN (simulando valor de R$40 da assinatura)
+    let nivel1 = await Usuario.findById(novoUsuario.indicadoPor);
+    if (nivel1) {
+      nivel1.saldo += 40 * 0.4;
+      await nivel1.save();
+
+      let nivel2 = await Usuario.findById(nivel1.indicadoPor);
+      if (nivel2) {
+        nivel2.saldo += 40 * 0.07;
+        await nivel2.save();
+
+        let nivel3 = await Usuario.findById(nivel2.indicadoPor);
+        if (nivel3) {
+          nivel3.saldo += 40 * 0.03;
+          await nivel3.save();
+        }
       }
     }
 
