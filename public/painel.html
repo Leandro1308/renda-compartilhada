@@ -2,92 +2,78 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Painel do Afiliado</title>
+  <title>Painel do Aluno - Clube da Mente</title>
   <style>
     body {
-      background-color: #f2f2f2;
+      background: #f4f6f9;
       font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
       text-align: center;
-      padding: 100px;
     }
-    .box {
+
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    .painel {
+      padding: 20px;
+    }
+
+    .cursos {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .curso {
       background: white;
-      border-radius: 10px;
-      padding: 30px;
-      display: inline-block;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      width: 280px;
+      text-align: left;
     }
-    .sucesso { color: green; }
-    .erro { color: red; }
-    .link { margin-top: 20px; word-break: break-all; }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #4CAF50;
+
+    .curso h3 {
+      margin-top: 0;
+    }
+
+    .curso a {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 12px;
+      background-color: #3498db;
       color: white;
       border: none;
-      border-radius: 5px;
-      cursor: pointer;
+      border-radius: 4px;
+      text-decoration: none;
+    }
+
+    .link-afiliado {
+      margin: 20px 0;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>Painel do Afiliado</h1>
-    <p id="mensagem" class="erro">Verificando autenticação...</p>
+
+  <header>
+    <h1>Clube da Mente - Área do Aluno</h1>
+    <p id="mensagem"></p>
     <p id="saldo"></p>
-    <div class="link">
-      <p>Seu link de indicação:</p>
-      <p id="linkIndicacao"></p>
+  </header>
+
+  <div class="painel">
+    <div class="link-afiliado">
+      Seu link de afiliado: <span id="linkAfiliado"></span>
     </div>
-    <button onclick="solicitarSaque()">Solicitar Saque</button>
-    <p id="retorno"></p>
-  </div>
 
-<script>
-const token = localStorage.getItem("token");
-
-fetch("/verificar", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ token }),
-})
-.then(res => res.json())
-.then(data => {
-  const msg = document.getElementById("mensagem");
-  const saldo = document.getElementById("saldo");
-  const link = document.getElementById("linkIndicacao");
-
-  if (data.sucesso) {
-    msg.className = "sucesso";
-    msg.textContent = `Bem-vindo, ${data.email}!`;
-    saldo.textContent = `Saldo disponível: R$ ${data.saldo.toFixed(2)}`;
-    link.textContent = `${window.location.origin}/cadastro.html?ref=${data.email}`;
-  } else {
-    msg.className = "erro";
-    msg.textContent = "Usuário não autenticado.";
-  }
-})
-.catch(() => {
-  document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
-});
-
-function solicitarSaque() {
-  fetch('/saque', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token }),
-  })
-  .then(res => res.json())
-  .then(data => {
-    const retorno = document.getElementById('retorno');
-    retorno.textContent = data.mensagem;
-    retorno.style.color = data.sucesso ? 'green' : 'red';
-  })
-  .catch(() => {
-    document.getElementById('retorno').textContent = "Erro ao solicitar saque.";
-  });
-}
-</script>
-</body>
-</html>
+    <h2>Cursos Dispon
