@@ -76,4 +76,58 @@
       Seu link de afiliado: <span id="linkAfiliado"></span>
     </div>
 
-    <h2>Cursos Dispon
+    <h2>Cursos Disponíveis</h2>
+    <div class="cursos" id="listaCursos">
+      <p>Carregando cursos...</p>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "login.html";
+    }
+
+    fetch("/verificar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.sucesso) {
+        return window.location.href = "login.html";
+      }
+
+      document.getElementById("mensagem").textContent = `Bem-vindo, ${data.email}`;
+      document.getElementById("saldo").textContent = `Saldo: R$ ${data.saldo.toFixed(2)}`;
+      document.getElementById("linkAfiliado").textContent = `${window.location.origin}/cadastro.html?indicador=${data.id}`;
+
+      // Carrega os cursos
+      fetch("/cursos", {
+        headers: { "Authorization": `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(cursos => {
+        const lista = document.getElementById("listaCursos");
+        lista.innerHTML = "";
+
+        if (cursos.length === 0) {
+          lista.innerHTML = "<p>Nenhum curso disponível.</p>";
+        }
+
+        cursos.forEach(curso => {
+          const item = document.createElement("div");
+          item.className = "curso";
+          item.innerHTML = `
+            <h3>${curso.titulo}</h3>
+            <p>${curso.descricao}</p>
+            <a href="${curso.url}" target="_blank">Acessar</a>
+          `;
+          lista.appendChild(item);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
