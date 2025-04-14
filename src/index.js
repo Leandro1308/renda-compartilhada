@@ -16,12 +16,14 @@ const saques = require('./saques');
 const pagamentos = require('./pagamentos');
 const cursos = require('./cursos');
 const anuncios = require('./anuncios');
+const configuracao = require('./configuracao'); // <- Adicionado
 
 app.use('/usuarios', usuarios);
 app.use('/saques', saques);
 app.use('/pagamentos', pagamentos);
 app.use('/cursos', cursos);
 app.use('/anuncios', anuncios);
+app.use('/configuracao', configuracao); // <- Adicionado
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
