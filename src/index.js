@@ -1,13 +1,15 @@
 const express = require('express');
 const cors = require('cors');
-const app = express();
 require('dotenv').config();
+const connectDB = require('./db');
+
+const app = express();
+connectDB();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Rotas principais
 const usuarios = require('./usuarios');
 const saques = require('./saques');
 const pagamentos = require('./pagamentos');
