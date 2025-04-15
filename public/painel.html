@@ -8,7 +8,7 @@
       background-color: #f2f2f2;
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 80px;
+      padding: 50px;
     }
     .box {
       background: white;
@@ -16,16 +16,12 @@
       padding: 30px;
       display: inline-block;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      max-width: 600px;
     }
     .sucesso { color: green; }
     .erro { color: red; }
-    .link, .cursos, .lucros {
-      margin-top: 20px;
-      word-break: break-word;
-    }
+    .link { margin-top: 20px; word-break: break-word; }
     button {
-      margin-top: 15px;
+      margin-top: 10px;
       padding: 10px 20px;
       background-color: #4CAF50;
       color: white;
@@ -33,47 +29,39 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    .esmaecido {
-      opacity: 0.5;
+    .bloqueado {
+      opacity: 0.4;
       pointer-events: none;
-    }
-    .botao-secundario {
-      background-color: #2196F3;
-    }
-    .aviso {
-      color: #d9534f;
-      font-weight: bold;
-      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <div class="box">
     <h1>Painel do Afiliado</h1>
-    <p id="mensagem" class="erro">Verificando autenticação...</p>
+    <p id="mensagem">Verificando autenticação...</p>
+
     <p id="statusAssinatura"></p>
-    <div id="aviso" class="aviso"></div>
+
     <p id="saldo"></p>
+
     <div class="link">
       <p>Seu link de indicação:</p>
       <p id="linkIndicacao"></p>
     </div>
 
-    <div id="botoesExtras"></div>
-
     <button onclick="solicitarSaque()" id="botaoSaque">Solicitar Saque</button>
+
+    <div id="renovacaoManual"></div>
+
+    <div id="controleAuto"></div>
+
     <p id="retorno"></p>
   </div>
 
 <script>
 const token = localStorage.getItem("token");
 
-if (!token) {
-  alert("Você precisa estar logado.");
-  window.location.href = '/login.html';
-}
-
-fetch("/verificar", {
+fetch("/usuarios/verificar", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ token }),
@@ -81,95 +69,82 @@ fetch("/verificar", {
 .then(res => res.json())
 .then(data => {
   const msg = document.getElementById("mensagem");
-  const status = document.getElementById("statusAssinatura");
   const saldo = document.getElementById("saldo");
-  const aviso = document.getElementById("aviso");
-  const botoes = document.getElementById("botoesExtras");
-  const saqueBtn = document.getElementById("botaoSaque");
   const link = document.getElementById("linkIndicacao");
+  const status = document.getElementById("statusAssinatura");
+  const botaoSaque = document.getElementById("botaoSaque");
+  const renovacaoManual = document.getElementById("renovacaoManual");
+  const controleAuto = document.getElementById("controleAuto");
 
   if (data.sucesso) {
     msg.className = "sucesso";
     msg.textContent = `Bem-vindo, ${data.email}`;
-    link.textContent = `${window.location.origin}/cadastro.html?ref=${data.email}`;
-    saldo.textContent = `Saldo disponível: R$ ${data.saldo.toFixed(2)}`;
-    status.textContent = `Status da assinatura: ${data.status}`;
-    
-    if (data.status === 'inativo') {
-      aviso.textContent = "Sua assinatura está inativa. Renove para acessar todos os cursos e seus lucros.";
-      saqueBtn.classList.add("esmaecido");
 
-      if (data.saldo >= data.valorAssinatura) {
-        botoes.innerHTML += `
-          <button onclick="renovarComSaldo()">Renovar com Saldo</button>
-        `;
+    saldo.textContent = `Saldo disponível: R$ ${data.saldo.toFixed(2)}`;
+
+    link.textContent = `${window.location.origin}/cadastro.html?ref=${data.id}`;
+
+    status.textContent = `Status da assinatura: ${data.statusAssinatura}`;
+
+    if(data.statusAssinatura === 'inativo') {
+      saldo.classList.add("bloqueado");
+      link.classList.add("bloqueado");
+      botaoSaque.disabled = true;
+      msg.innerHTML += "<br><span class='erro'>Você está inativo. Renove sua assinatura para liberar os cursos e ganhos.</span>";
+
+      if(data.saldo >= data.valorAssinatura){
+        renovacaoManual.innerHTML = `<button onclick="renovarAssinatura()">Renovar com Saldo</button>`;
       }
 
-      botoes.innerHTML += `
-        <button class="botao-secundario" onclick="toggleRenovacao()">Renovação Automática: ${data.renovacaoAutomatica ? 'Ativada' : 'Desativada'}</button>
-      `;
-
     } else {
-      aviso.textContent = "";
-      saqueBtn.classList.remove("esmaecido");
-
-      botoes.innerHTML += `
-        <button class="botao-secundario" onclick="toggleRenovacao()">Renovação Automática: ${data.renovacaoAutomatica ? 'Ativada' : 'Desativada'}</button>
-      `;
+      renovacaoManual.innerHTML = '';
     }
+
+    controleAuto.innerHTML = `
+      Renovação Automática: ${data.renovacaoAutomatica ? 'Ativada' : 'Desativada'}<br>
+      <button onclick="toggleAuto(${data.renovacaoAutomatica})">
+        ${data.renovacaoAutomatica ? 'Desativar' : 'Ativar'} Renovação Automática
+      </button>
+    `;
 
   } else {
     msg.className = "erro";
     msg.textContent = "Usuário não autenticado.";
   }
-})
-.catch(() => {
-  document.getElementById("mensagem").textContent = "Erro ao verificar autenticação.";
 });
 
 function solicitarSaque() {
-  fetch('/saque', {
+  const retorno = document.getElementById('retorno');
+  fetch('/saques', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token }),
   })
   .then(res => res.json())
   .then(data => {
-    const retorno = document.getElementById('retorno');
     retorno.textContent = data.mensagem;
     retorno.style.color = data.sucesso ? 'green' : 'red';
-  })
-  .catch(() => {
-    document.getElementById('retorno').textContent = "Erro ao solicitar saque.";
   });
 }
 
-function renovarComSaldo() {
-  fetch('/usuarios/renovar-com-saldo', {
+function renovarAssinatura(){
+  fetch('/usuarios/renovar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token }),
   })
   .then(res => res.json())
-  .then(data => {
-    alert(data.mensagem);
-    location.reload();
-  })
-  .catch(() => alert("Erro ao tentar renovar."));
+  .then(data => location.reload());
 }
 
-function toggleRenovacao() {
-  fetch('/usuarios/toggle-renovacao', {
+function toggleAuto(ativo){
+  fetch('/usuarios/renovacao-automatica', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token }),
+    body: JSON.stringify({ token, ativar: !ativo }),
   })
   .then(res => res.json())
-  .then(data => {
-    alert(data.mensagem);
-    location.reload();
-  })
-  .catch(() => alert("Erro ao alterar renovação automática."));
+  .then(data => location.reload());
 }
 </script>
 </body>
