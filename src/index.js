@@ -16,14 +16,18 @@ const saques = require('./saques');
 const pagamentos = require('./pagamentos');
 const cursos = require('./cursos');
 const anuncios = require('./anuncios');
-const configuracao = require('./configuracao'); // <- Adicionado
+const configuracao = require('./configuracao');
+const renovarAssinaturas = require('./renovacao'); // <- Nova função de renovação automática
 
 app.use('/usuarios', usuarios);
 app.use('/saques', saques);
 app.use('/pagamentos', pagamentos);
 app.use('/cursos', cursos);
 app.use('/anuncios', anuncios);
-app.use('/configuracao', configuracao); // <- Adicionado
+app.use('/configuracao', configuracao);
+
+// Executa renovação automática a cada 5 minutos
+setInterval(renovarAssinaturas, 5 * 60 * 1000);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
