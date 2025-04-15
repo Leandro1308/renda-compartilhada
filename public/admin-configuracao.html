@@ -2,48 +2,100 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Admin - Configurações</title>
+  <title>Configuração de Assinatura</title>
+  <style>
+    body {
+      background: #f4f4f4;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    nav {
+      margin-bottom: 30px;
+    }
+    nav a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #4CAF50;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    .box {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 90%;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 15px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Configurações da Assinatura</h1>
 
-  <label>Valor da Assinatura:</label><br>
-  <input type="number" id="valorAssinatura"><br><br>
+  <nav>
+    <a href="admin.html">Menu Principal</a>
+    <a href="admin-cursos.html">Cursos</a>
+    <a href="admin-usuarios.html">Usuários</a>
+    <a href="pagamento.html">Saques</a>
+  </nav>
 
-  <label>Periodicidade:</label><br>
-  <select id="periodicidade">
-    <option value="semanal">Semanal</option>
-    <option value="mensal">Mensal</option>
-    <option value="anual">Anual</option>
-  </select><br><br>
+  <div class="box">
+    <h1>Configurar Assinatura</h1>
 
-  <label>Valor mínimo para saque:</label><br>
-  <input type="number" id="valorMinimoSaque"><br><br>
+    <input type="number" id="valor" placeholder="Valor da assinatura" step="0.01" required />
+    <select id="periodicidade">
+      <option value="semanal">Semanal</option>
+      <option value="mensal">Mensal</option>
+      <option value="anual">Anual</option>
+    </select>
+    <button onclick="salvar()">Salvar Configuração</button>
 
-  <button onclick="salvar()">Salvar</button>
-  <p id="msg"></p>
+    <p id="msg"></p>
+  </div>
 
 <script>
-fetch('/configuracao')
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById('valorAssinatura').value = data.valorAssinatura;
-    document.getElementById('periodicidade').value = data.periodicidade;
-    document.getElementById('valorMinimoSaque').value = data.valorMinimoSaque;
-  });
+  fetch('/configuracao')
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('valor').value = data.valor;
+      document.getElementById('periodicidade').value = data.periodicidade;
+    });
 
-function salvar() {
-  fetch('/configuracao', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      valorAssinatura: parseFloat(document.getElementById('valorAssinatura').value),
-      periodicidade: document.getElementById('periodicidade').value,
-      valorMinimoSaque: parseFloat(document.getElementById('valorMinimoSaque').value),
+  function salvar() {
+    const valor = parseFloat(document.getElementById('valor').value);
+    const periodicidade = document.getElementById('periodicidade').value;
+    const msg = document.getElementById('msg');
+
+    fetch('/configuracao', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ valor, periodicidade })
     })
-  })
-  .then(() => document.getElementById('msg').textContent = "Salvo com sucesso!")
-}
+    .then(() => {
+      msg.style.color = 'green';
+      msg.textContent = 'Configuração salva com sucesso!';
+    })
+    .catch(() => {
+      msg.style.color = 'red';
+      msg.textContent = 'Erro ao salvar configuração.';
+    });
+  }
 </script>
 
 </body>
