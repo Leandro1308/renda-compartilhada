@@ -2,71 +2,126 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Clube da Mente - Sua Liberdade Começa Aqui</title>
+  <title>Bem-vindo ao Clube da Mente</title>
   <style>
     body {
-      background-color: #f7f7f7;
+      background-color: #f2f2f2;
       font-family: Arial, sans-serif;
+      text-align: center;
       margin: 0;
       padding: 0;
-      text-align: center;
     }
     .container {
       max-width: 900px;
       margin: auto;
       padding: 30px;
+      background: white;
+      border-radius: 10px;
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    .color1 { color: #27ae60; }
+    .color2 { color: #2980b9; }
+    .color3 { color: #e67e22; }
+    .color4 { color: #8e44ad; }
+    p {
+      font-size: 18px;
+      line-height: 1.6;
+      margin: 20px 0;
+    }
+    input {
+      padding: 10px;
+      margin: 5px;
+      width: 80px;
+      text-align: center;
+    }
+    button {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
     }
     img {
       max-width: 100%;
-    }
-    h1 {
-      color: #2c3e50;
-    }
-    h2 {
-      color: #2980b9;
-    }
-    p {
-      font-size: 18px;
-      color: #555;
-      line-height: 1.6;
-    }
-    .btn {
-      display: inline-block;
-      background-color: #27ae60;
-      color: #fff;
-      padding: 15px 30px;
-      margin-top: 20px;
-      text-decoration: none;
-      border-radius: 5px;
-      font-size: 20px;
+      margin: 20px 0;
+      border-radius: 10px;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <img src="https://i.imgur.com/wZrP3Io.png" alt="Clube da Mente">
+  <h1 class="color1">Bem-vindo ao Clube da Mente</h1>
+  <h3 class="color2">Você foi convidado por <span id="afiliado">[Nome do Afiliado]</span></h3>
 
-  <h1>Bem-vindo ao Clube da Mente!</h1>
+  <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Saúde Mental">
 
-  <h2>Você foi convidado por: <span id="afiliado"></span></h2>
+  <h2 class="color3">O que é o Clube da Mente?</h2>
+  <p>O Clube da Mente é um portal exclusivo onde você tem acesso a conteúdos valiosos de Saúde Mental, Desenvolvimento Pessoal e Educação Financeira.</p>
 
-  <p>O Clube da Mente é um projeto exclusivo que une Desenvolvimento Pessoal, Saúde Mental e Educação Financeira. Aqui você cresce mentalmente, emocionalmente e financeiramente.</p>
+  <h2 class="color4">Benefícios dos Cursos</h2>
+  <p>Você aprenderá como a sua mente funciona, como tratar problemas emocionais, técnicas cognitivas para lidar com ansiedade, depressão, estresse e muito mais.</p>
+  <p>Além disso, você descobrirá princípios simples e práticos para organizar sua vida financeira, sair das dívidas, economizar, multiplicar seu dinheiro e construir liberdade financeira de forma inteligente e progressiva.</p>
 
-  <h2>O que você ganha sendo membro?</h2>
-  <p>✔ Acesso a cursos de saúde mental, inteligência emocional e educação financeira<br>
-  ✔ Participa de uma comunidade que ajuda você a crescer<br>
-  ✔ Pode se tornar um afiliado e ganhar comissões indicando amigos</p>
+  <img src="https://cdn-icons-png.flaticon.com/512/5610/5610911.png" alt="Educação Financeira">
 
-  <img src="https://i.imgur.com/09V4H9I.png" alt="Ganhos 3 Níveis">
+  <h2 class="color3">Ganhe Dinheiro Indicando</h2>
+  <p>Você pode se tornar um afiliado e ganhar comissões de 3 níveis:</p>
 
-  <h2>Como funciona os ganhos em 3 níveis?</h2>
-  <p>Você ganha comissão sempre que indicar alguém. E também ganha pelas indicações das suas indicações!</p>
+  <img src="https://cdn-icons-png.flaticon.com/512/3321/3321794.png" alt="Ganhos em 3 níveis">
 
-  <h3>Exemplo de Ganhos:</h3>
-  <p>Nível 1 - 40% sobre cada indicado direto<br>
-     Nível 2 - 7% sobre indicados indiretos<br>
-     Nível 3 - 3% sobre os indicados do seu time</p>
+  <ul style="text-align:left; font-size:18px;">
+    <li>1º Nível → 40% do valor da assinatura de cada indicado direto</li>
+    <li>2º Nível → 7% dos indicados do seu indicado</li>
+    <li>3º Nível → 3% dos indicados do 2º nível</li>
+  </ul>
 
-  <h2
+  <h2 class="color4">Simule seus Ganhos</h2>
+
+  <div>
+    <label>Indicações diretas (1º Nível):</label><br>
+    <input type="number" id="nivel1" value="5"><br>
+
+    <label>Indicações do 2º Nível:</label><br>
+    <input type="number" id="nivel2" value="10"><br>
+
+    <label>Indicações do 3º Nível:</label><br>
+    <input type="number" id="nivel3" value="20"><br>
+
+    <button onclick="calcularGanhos()">Calcular Ganhos</button>
+
+    <h3 id="resultado" style="color:#27ae60; margin-top:20px;"></h3>
+  </div>
+
+</div>
+
+<script>
+const valorAssinatura = 2.00; // valor atual configurado no sistema
+
+function calcularGanhos() {
+  const nivel1 = parseInt(document.getElementById('nivel1').value) || 0;
+  const nivel2 = parseInt(document.getElementById('nivel2').value) || 0;
+  const nivel3 = parseInt(document.getElementById('nivel3').value) || 0;
+
+  const ganho1 = nivel1 * valorAssinatura * 0.40;
+  const ganho2 = nivel2 * valorAssinatura * 0.07;
+  const ganho3 = nivel3 * valorAssinatura * 0.03;
+
+  const total = ganho1 + ganho2 + ganho3;
+
+  document.getElementById('resultado').innerText = 
+    `Você poderá ganhar aproximadamente R$ ${total.toFixed(2)} por semana!`;
+}
+
+// Captura o nome do afiliado pela URL
+const params = new URLSearchParams(window.location.search);
+const afiliado = params.get('afiliado') || 'um de nossos membros';
+document.getElementById('afiliado').innerText = afiliado;
+</script>
+
+</body>
+</html>
