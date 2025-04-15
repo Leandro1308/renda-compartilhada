@@ -21,35 +21,16 @@ router.post('/cadastro', async (req, res) => {
       email,
       senha: senhaHash,
       indicadoPor: indicadoPor || null,
+      statusAssinatura: 'ativo'
     });
 
     await novoUsuario.save();
 
-    // Adicionar como indicado
     if (indicadoPor) {
       const indicante = await Usuario.findById(indicadoPor);
       if (indicante) {
         indicante.indicados.push(novoUsuario._id);
         await indicante.save();
-      }
-    }
-
-    // PAGAMENTO DAS COMISSÕES MMN (simulando valor de R$40 da assinatura)
-    let nivel1 = await Usuario.findById(novoUsuario.indicadoPor);
-    if (nivel1) {
-      nivel1.saldo += 40 * 0.4;
-      await nivel1.save();
-
-      let nivel2 = await Usuario.findById(nivel1.indicadoPor);
-      if (nivel2) {
-        nivel2.saldo += 40 * 0.07;
-        await nivel2.save();
-
-        let nivel3 = await Usuario.findById(nivel2.indicadoPor);
-        if (nivel3) {
-          nivel3.saldo += 40 * 0.03;
-          await nivel3.save();
-        }
       }
     }
 
@@ -75,6 +56,66 @@ router.post('/login', async (req, res) => {
     res.status(200).json({ mensagem: 'Login realizado com sucesso', token });
   } catch (error) {
     res.status(500).json({ erro: 'Erro ao realizar login' });
+  }
+});
+
+// Verificar dados do usuário
+router.post('/verificar', async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const usuario = await Usuario.findById(decoded.id);
+
+    if (!usuario) return res.status(401).json({ erro: 'Usuário não encontrado' });
+
+    res.json({
+      sucesso: true,
+      id: usuario._id,
+      email: usuario.email,
+      saldo: usuario.saldo,
+      statusAssinatura: usuario.statusAssinatura,
+      renovacaoAutomatica: usuario.renovacaoAutomatica
+    });
+  } catch (error) {
+    res.status(401).json({ erro: 'Token inválido' });
+  }
+});
+
+// Renovar assinatura manualmente
+router.post('/renovar', async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const usuario = await Usuario.findById(decoded.id);
+
+    if (usuario.saldo < 2) return res.status(400).json({ mensagem: 'Saldo insuficiente para renovação.' });
+
+    usuario.saldo -= 2;
+    usuario.statusAssinatura = 'ativo';
+    await usuario.save();
+
+    res.json({ mensagem: 'Assinatura renovada com sucesso!' });
+  } catch (error) {
+    res.status(401).json({ erro: 'Token inválido' });
+  }
+});
+
+// Ativar ou desativar renovação automática
+router.post('/auto-renovacao', async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const usuario = await Usuario.findById(decoded.id);
+
+    usuario.renovacaoAutomatica = !usuario.renovacaoAutomatica;
+    await usuario.save();
+
+    res.json({ mensagem: usuario.renovacaoAutomatica ? 'Renovação automática ativada.' : 'Renovação automática desativada.' });
+  } catch (error) {
+    res.status(401).json({ erro: 'Token inválido' });
   }
 });
 
