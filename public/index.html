@@ -1,67 +1,82 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sistema de Afiliados - Cadastro</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro - Clube da Mente</title>
   <style>
     body {
+      margin: 0;
+      padding: 0;
+      background-color: #0f1117;
       font-family: Arial, sans-serif;
-      background: #f0f9f9;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
-      margin: 0;
+      color: #ffffff;
     }
 
     h1 {
-      color: #333;
+      font-size: 28px;
       margin-bottom: 20px;
+      color: #f5f5f5;
     }
 
     form {
-      background: #fff;
+      background-color: #1f222c;
       padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
       width: 100%;
       max-width: 400px;
+      display: flex;
+      flex-direction: column;
     }
 
     label {
-      display: block;
+      text-align: left;
       margin-bottom: 5px;
       font-weight: bold;
+      font-size: 14px;
+      color: #cccccc;
     }
 
     input {
-      width: 100%;
       padding: 10px;
+      border-radius: 8px;
+      border: none;
       margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      background-color: #2e3342;
+      color: #ffffff;
+      font-size: 14px;
+    }
+
+    input::placeholder {
+      color: #aaaaaa;
     }
 
     button {
-      width: 100%;
-      padding: 10px;
-      background: #28a745;
+      background-color: #04c45c;
       color: white;
       font-weight: bold;
+      padding: 12px;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 16px;
     }
 
     button:hover {
-      background: #218838;
+      background-color: #03a34d;
     }
 
     #mensagem {
       margin-top: 15px;
       font-weight: bold;
+      text-align: center;
     }
   </style>
 </head>
@@ -69,13 +84,13 @@
   <h1>Cadastro de Afiliado</h1>
   <form id="formCadastro">
     <label for="nome">Nome:</label>
-    <input type="text" id="nome" name="nome" required />
+    <input type="text" id="nome" name="nome" placeholder="Digite seu nome" required />
 
     <label for="email">E-mail:</label>
-    <input type="email" id="email" name="email" required />
+    <input type="email" id="email" name="email" placeholder="Digite seu email" required />
 
     <label for="senha">Senha:</label>
-    <input type="password" id="senha" name="senha" required />
+    <input type="password" id="senha" name="senha" placeholder="Crie uma senha" required />
 
     <button type="submit">Cadastrar</button>
     <p id="mensagem"></p>
@@ -93,7 +108,7 @@
       const senha = form.senha.value;
 
       try {
-        const response = await fetch("/cadastro", {
+        const response = await fetch("/usuarios/cadastro", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nome, email, senha }),
@@ -102,15 +117,15 @@
         const resultado = await response.json();
 
         if (response.ok) {
-          mensagem.style.color = "green";
+          mensagem.style.color = "#00ff88";
           mensagem.textContent = resultado.mensagem;
           form.reset();
         } else {
-          mensagem.style.color = "red";
+          mensagem.style.color = "#ff4444";
           mensagem.textContent = resultado.erro;
         }
       } catch (erro) {
-        mensagem.style.color = "red";
+        mensagem.style.color = "#ff4444";
         mensagem.textContent = "Erro ao conectar com o servidor.";
       }
     });
