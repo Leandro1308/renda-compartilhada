@@ -2,124 +2,137 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Clube da Mente - Transforme sua Vida!</title>
+  <title>Bem-vindo ao Clube da Mente</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
       background-color: #f9f9f9;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
       text-align: center;
       color: #333;
     }
-    h1, h2, h3 {
-      color: #2c3e50;
+
+    header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 30px 20px;
     }
-    .container {
-      padding: 30px;
-      max-width: 1000px;
+
+    section {
+      padding: 40px 20px;
+      max-width: 900px;
       margin: auto;
     }
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 10px;
-      margin: 20px 0;
+
+    h1, h2 {
+      margin-bottom: 15px;
     }
-    .calculadora {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-top: 40px;
+
+    p {
+      line-height: 1.7;
+      margin-bottom: 25px;
     }
-    input {
-      padding: 10px;
-      width: 60px;
+
+    .beneficios, .ganhos, .calculadora {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+    }
+
+    .input {
+      margin: 5px;
+      padding: 8px;
+      width: 80px;
       text-align: center;
     }
+
     button {
-      padding: 10px 20px;
-      background-color: #27ae60;
-      border: none;
+      background-color: #4CAF50;
       color: white;
-      font-size: 16px;
+      padding: 12px 30px;
+      border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin-top: 10px;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #777;
     }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>Bem-vindo ao Clube da Mente!</h1>
-    <h2>Você foi convidado por: <span id="indicador"></span></h2>
 
-    <p>No Clube da Mente você transforma sua vida com conhecimento e ainda tem a chance de construir sua liberdade financeira!</p>
+<header>
+  <h1>Bem-vindo ao Clube da Mente</h1>
+  <h3>Você foi convidado por: <span id="nomeAfiliado"></span></h3>
+</header>
 
-    <h2>O que você encontra aqui?</h2>
-    <img src="erp-siger-dicas-saudemental-covid-coronavirus.png">
-    <h3>Cursos de Saúde Mental</h3>
-    <p>Aprenda sobre o funcionamento da mente humana, como lidar com emoções, ansiedade, depressão e técnicas práticas para vencer bloqueios mentais, conquistar autoconfiança e equilíbrio emocional.</p>
+<section class="beneficios">
+  <h2>O que é o Clube da Mente?</h2>
+  <p>Um clube de conhecimento exclusivo que une Saúde Mental e Educação Financeira, criando equilíbrio emocional e liberdade financeira.</p>
 
-    <img src="saiba-por-que-controle-de-financas-e-tao-importante.jpeg">
-    <h3>Cursos de Educação Financeira</h3>
-    <p>Aprenda desde sair das dívidas, construir uma reserva financeira, gerar múltiplas fontes de renda, psicologia do dinheiro e técnicas usadas pelas pessoas mais bem-sucedidas financeiramente.</p>
+  <h2>Benefícios de participar:</h2>
+  <p>✔️ Acesso a cursos sobre funcionamento da mente, técnicas cognitivas, combate ao estresse, ansiedade e muito mais.</p>
+  <p>✔️ Treinamentos financeiros para pagar dívidas, organizar sua vida financeira, construir renda extra e riqueza.</p>
+  <p>✔️ Possibilidade de lucrar como afiliado, indicando amigos e formando sua rede de ganhos.</p>
+</section>
 
-    <h2>Ganhe dinheiro indicando amigos!</h2>
-    <img src="mmn-veek.png">
-    <p>Receba comissões em até 3 níveis de afiliados.</p>
+<section class="ganhos">
+  <h2>Como Funciona o Sistema de Ganhos?</h2>
+  <p>Você pode lucrar em até 3 níveis de indicações:</p>
+  <p><strong>Nível 1:</strong> Ganho direto de 40% sobre cada indicado.</p>
+  <p><strong>Nível 2:</strong> Ganho indireto de 7% sobre os indicados do seu indicado.</p>
+  <p><strong>Nível 3:</strong> Ganho indireto de 3% sobre os indicados do indicado do seu indicado.</p>
+</section>
 
-    <ul style="list-style:none; font-size:18px;">
-      <li><b>Nível 1:</b> 40% das indicações diretas</li>
-      <li><b>Nível 2:</b> 7% das indicações dos seus indicados</li>
-      <li><b>Nível 3:</b> 3% das indicações do nível 2</li>
-    </ul>
+<section class="calculadora">
+  <h2>Simule seus Ganhos:</h2>
+  <p>Valor da Assinatura Atual: <strong id="valorAssinatura">R$ 2,00</strong></p>
 
-    <h2>Simule seus ganhos:</h2>
-    <div class="calculadora">
-      <p>Valor da assinatura atual: <b>R$ <span id="valorAssinatura"></span></b></p>
+  <p>
+    Nível 1: <input type="number" id="nivel1" class="input" placeholder="Qtd">
+    Nível 2: <input type="number" id="nivel2" class="input" placeholder="Qtd">
+    Nível 3: <input type="number" id="nivel3" class="input" placeholder="Qtd">
+  </p>
 
-      <label>Nível 1: </label><input type="number" id="nivel1" value="0"> afiliados <br><br>
-      <label>Nível 2: </label><input type="number" id="nivel2" value="0"> afiliados <br><br>
-      <label>Nível 3: </label><input type="number" id="nivel3" value="0"> afiliados <br><br>
+  <button onclick="calcular()">Calcular Ganhos</button>
 
-      <button onclick="calcularGanhos()">Calcular Ganhos</button>
+  <h3 id="resultado"></h3>
+</section>
 
-      <h3>Ganhos Estimados:</h3>
-      <div id="resultado"></div>
-    </div>
+<button onclick="window.location.href='index.html'">Quero Me Cadastrar Agora</button>
 
-    <br><br>
-    <button onclick="window.location.href='index.html'">Quero me cadastrar agora!</button>
-  </div>
+<footer>
+  Clube da Mente - Todos os direitos reservados.
+</footer>
 
 <script>
-  const valorAssinatura = 2.00; // Esse valor pode ser atualizado automaticamente depois
-
-  document.getElementById('valorAssinatura').innerText = valorAssinatura.toFixed(2);
-
   const urlParams = new URLSearchParams(window.location.search);
-  const indicador = urlParams.get('indicador') || 'Afiliado';
-  document.getElementById('indicador').innerText = indicador;
+  const afiliado = urlParams.get('afiliado') || 'Seu Amigo';
 
-  function calcularGanhos() {
-    const n1 = parseInt(document.getElementById('nivel1').value);
-    const n2 = parseInt(document.getElementById('nivel2').value);
-    const n3 = parseInt(document.getElementById('nivel3').value);
+  document.getElementById('nomeAfiliado').innerText = afiliado;
 
-    const ganho1 = n1 * valorAssinatura * 0.40;
-    const ganho2 = n2 * valorAssinatura * 0.07;
-    const ganho3 = n3 * valorAssinatura * 0.03;
+  function calcular() {
+    const assinatura = 2.00;
 
-    const total = ganho1 + ganho2 + ganho3;
+    const nivel1 = parseInt(document.getElementById('nivel1').value) || 0;
+    const nivel2 = parseInt(document.getElementById('nivel2').value) || 0;
+    const nivel3 = parseInt(document.getElementById('nivel3').value) || 0;
 
-    document.getElementById('resultado').innerHTML = `
-      Nível 1: R$ ${ganho1.toFixed(2)}<br>
-      Nível 2: R$ ${ganho2.toFixed(2)}<br>
-      Nível 3: R$ ${ganho3.toFixed(2)}<br>
-      <b>Total: R$ ${total.toFixed(2)}</b>
-    `;
+    const ganhos = (nivel1 * assinatura * 0.40) + (nivel2 * assinatura * 0.07) + (nivel3 * assinatura * 0.03);
+
+    document.getElementById('resultado').innerText = `Você pode ganhar aproximadamente: R$ ${ganhos.toFixed(2)}`;
   }
 </script>
 
