@@ -11,28 +11,19 @@
       padding: 0;
       text-align: center;
     }
-
     header {
       background: #2c3e50;
       color: white;
       padding: 20px;
     }
-
-    h1 {
-      margin: 0;
-    }
-
-    .painel {
-      padding: 20px;
-    }
-
+    h1 { margin: 0; }
+    .painel { padding: 20px; }
     .cursos {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 20px;
     }
-
     .curso {
       background: white;
       border-radius: 8px;
@@ -40,12 +31,13 @@
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
       width: 280px;
       text-align: left;
+      transition: 0.3s;
     }
-
-    .curso h3 {
-      margin-top: 0;
+    .bloqueado {
+      opacity: 0.4;
+      pointer-events: none;
     }
-
+    .curso h3 { margin-top: 0; }
     .curso a {
       display: inline-block;
       margin-top: 10px;
@@ -56,78 +48,139 @@
       border-radius: 4px;
       text-decoration: none;
     }
-
     .link-afiliado {
       margin: 20px 0;
       font-weight: bold;
+    }
+    .saldo { font-size: 18px; margin: 10px 0; }
+    .bloqueadoSaldo {
+      filter: blur(5px);
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      background-color: #27ae60;
+      color: white;
+      cursor: pointer;
+    }
+    .aviso {
+      background: #f39c12;
+      color: white;
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Clube da Mente - Área do Aluno</h1>
-    <p id="mensagem"></p>
-    <p id="saldo"></p>
-  </header>
+<header>
+  <h1>Clube da Mente - Área do Aluno</h1>
+  <p id="mensagem"></p>
+</header>
 
-  <div class="painel">
-    <div class="link-afiliado">
-      Seu link de afiliado: <span id="linkAfiliado"></span>
-    </div>
+<div class="painel">
+  <div id="aviso"></div>
 
-    <h2>Cursos Disponíveis</h2>
-    <div class="cursos" id="listaCursos">
-      <p>Carregando cursos...</p>
-    </div>
+  <div class="saldo">
+    Saldo disponível: <span id="saldo" class="bloqueadoSaldo">R$ 0,00</span>
   </div>
 
-  <script>
-    const token = localStorage.getItem("token");
-    if (!token) {
-      window.location.href = "login.html";
-    }
+  <div class="link-afiliado">
+    Seu link de afiliado: <span id="linkAfiliado"></span>
+  </div>
 
-    fetch("/verificar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.sucesso) {
-        return window.location.href = "login.html";
+  <button onclick="solicitarSaque()">Solicitar Saque</button>
+  <button onclick="renovarManual()">Renovar com Saldo</button>
+  <button onclick="ativarAutoRenovacao()">Ativar/Desativar Renovação Automática</button>
+
+  <h2>Cursos Disponíveis</h2>
+  <div class="cursos" id="listaCursos"><p>Carregando cursos...</p></div>
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+if (!token) { window.location.href = "login.html"; }
+
+let usuarioGlobal = null;
+
+fetch("/verificar", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ token }),
+})
+.then(res => res.json())
+.then(data => {
+  if (!data.sucesso) return window.location.href = "login.html";
+
+  usuarioGlobal = data;
+
+  document.getElementById("mensagem").textContent = `Bem-vindo, ${data.email}`;
+  document.getElementById("saldo").textContent = `R$ ${data.saldo.toFixed(2)}`;
+  document.getElementById("linkAfiliado").textContent = `${window.location.origin}/cadastro.html?indicador=${data.id}`;
+
+  if(data.statusAssinatura === 'inativo') {
+    document.getElementById("saldo").classList.add("bloqueadoSaldo");
+    document.getElementById("aviso").innerHTML = '<div class="aviso">Sua assinatura está inativa. Renove para acessar todos os cursos e seus ganhos!</div>';
+  }
+
+  fetch("/cursos", { headers: { "Authorization": `Bearer ${token}` } })
+  .then(res => res.json())
+  .then(cursos => {
+    const lista = document.getElementById("listaCursos");
+    lista.innerHTML = "";
+    cursos.forEach((curso, index) => {
+      const item = document.createElement("div");
+      item.className = "curso";
+      if(data.statusAssinatura === 'inativo' && index > 0) {
+        item.classList.add("bloqueado");
       }
-
-      document.getElementById("mensagem").textContent = `Bem-vindo, ${data.email}`;
-      document.getElementById("saldo").textContent = `Saldo: R$ ${data.saldo.toFixed(2)}`;
-      document.getElementById("linkAfiliado").textContent = `${window.location.origin}/cadastro.html?indicador=${data.id}`;
-
-      // Carrega os cursos
-      fetch("/cursos", {
-        headers: { "Authorization": `Bearer ${token}` }
-      })
-      .then(res => res.json())
-      .then(cursos => {
-        const lista = document.getElementById("listaCursos");
-        lista.innerHTML = "";
-
-        if (cursos.length === 0) {
-          lista.innerHTML = "<p>Nenhum curso disponível.</p>";
-        }
-
-        cursos.forEach(curso => {
-          const item = document.createElement("div");
-          item.className = "curso";
-          item.innerHTML = `
-            <h3>${curso.titulo}</h3>
-            <p>${curso.descricao}</p>
-            <a href="${curso.url}" target="_blank">Acessar</a>
-          `;
-          lista.appendChild(item);
-        });
-      });
+      item.innerHTML = `
+        <h3>${curso.titulo}</h3>
+        <p>${curso.descricao}</p>
+        <a href="${curso.url}" target="_blank">Acessar</a>
+      `;
+      lista.appendChild(item);
     });
-  </script>
+  });
+});
+
+function solicitarSaque() {
+  if(usuarioGlobal.statusAssinatura === 'inativo') {
+    alert("Sua assinatura está inativa. Renove para sacar.");
+    return;
+  }
+  alert("Em breve: Saque funcionando.");
+}
+
+function renovarManual() {
+  fetch('/usuarios/renovar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.mensagem);
+    location.reload();
+  });
+}
+
+function ativarAutoRenovacao() {
+  fetch('/usuarios/auto-renovacao', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.mensagem);
+    location.reload();
+  });
+}
+</script>
+
 </body>
 </html>
