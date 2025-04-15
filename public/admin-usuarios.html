@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Admin - Usuários</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 30px;
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    th {
+      background-color: #2c3e50;
+      color: white;
+    }
+    button {
+      padding: 5px 10px;
+      margin: 2px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .ativo { background-color: #27ae60; color: white; }
+    .inativo { background-color: #c0392b; color: white; }
+    .auto { background-color: #2980b9; color: white; }
+    .reset { background-color: #8e44ad; color: white; }
+  </style>
+</head>
+<body>
+
+  <h1>Painel de Administração de Usuários</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Saldo</th>
+        <th>Status</th>
+        <th>Renovação Automática</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaUsuarios">
+      <tr><td colspan="6">Carregando...</td></tr>
+    </tbody>
+  </table>
+
+<script>
+fetch('/usuarios')
+  .then(res => res.json())
+  .then(usuarios => {
+    const tabela = document.getElementById('tabelaUsuarios');
+    tabela.innerHTML = '';
+
+    usuarios.forEach(u => {
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td>${u.nome}</td>
+        <td>${u.email}</td>
+        <td>R$ ${u.saldo?.toFixed(2) || '0.00'}</td>
+        <td>${u.statusAssinatura || 'inativo'}</td>
+        <td>${u.renovacaoAutomatica ? 'Sim' : 'Não'}</td>
+        <td>
+          <button class="ativo" onclick="alterarStatus('${u._id}', 'ativo')">Ativar</button>
+          <button class="inativo" onclick="alterarStatus('${u._id}', 'inativo')">Inativar</button>
+          <button class="auto" onclick="toggleAuto('${u._id}', ${u.renovacaoAutomatica})">
+            ${u.renovacaoAutomatica ? 'Desativar' : 'Ativar'} Auto
+          </button>
+          <button class="reset" onclick="resetarSaldo('${u._id}')">Resetar Saldo</button>
+        </td>
+      `;
+
+      tabela.appendChild(tr);
+    });
+  });
+
+function alterarStatus(id, status) {
+  fetch(`/usuarios/status`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, status })
+  })
+  .then(() => location.reload());
+}
+
+function toggleAuto(id, atual) {
+  fetch(`/usuarios/forcar-renovacao-auto`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, ativar: !atual })
+  })
+  .then(() => location.reload());
+}
+
+function resetarSaldo(id) {
+  if (!confirm("Tem certeza que deseja resetar o saldo deste usuário?")) return;
+  fetch(`/usuarios/resetar-saldo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  })
+  .then(() => location.reload());
+}
+</script>
+
+</body>
+</html>
