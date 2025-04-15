@@ -2,58 +2,91 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clube da Mente - Ganhe Dinheiro e Conhecimento</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bem-vindo ao Clube da Mente</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      text-align: center;
-      padding: 50px;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
     }
     .container {
-      background: white;
-      padding: 40px;
-      border-radius: 10px;
-      display: inline-block;
-      max-width: 800px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 900px;
+      margin: auto;
+      padding: 30px;
+      background: #fff;
     }
-    h1 { color: #2c3e50; }
-    p { margin: 20px 0; line-height: 1.6; }
-    .botao {
-      padding: 15px 25px;
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    p {
+      line-height: 1.6;
+    }
+    img {
+      max-width: 100%;
+    }
+    .btn {
+      display: inline-block;
       background-color: #27ae60;
       color: white;
-      border: none;
+      padding: 15px 25px;
       border-radius: 5px;
       text-decoration: none;
-      font-size: 18px;
+      margin-top: 20px;
+    }
+    .highlight {
+      color: #e74c3c;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Bem-vindo ao Clube da Mente</h1>
-  <p>Tenha acesso a conteúdos exclusivos de Saúde Mental, Desenvolvimento Pessoal e Educação Financeira!</p>
-  <p>Ganhe dinheiro indicando amigos para o Clube da Mente.</p>
-  <p>Você recebe até 3 níveis de comissões!</p>
-  
-  <p><strong>Assinatura: Apenas R$ 2,00 por semana (fase beta)</strong></p>
+  <h1>Bem-vindo ao Clube da Mente!</h1>
 
-  <a id="btnCadastro" class="botao">Quero Me Cadastrar Agora</a>
+  <h2>Você foi convidado por: <span id="convidador" class="highlight">...</span></h2>
+
+  <p>O <strong>Clube da Mente</strong> é um ambiente exclusivo com conteúdos de <strong>Saúde Mental, Desenvolvimento Pessoal e Educação Financeira</strong>.</p>
+
+  <h2>O que você terá acesso:</h2>
+  <ul>
+    <li>Cursos em Vídeo</li>
+    <li>Materiais em PDF</li>
+    <li>Links de Aulas Exclusivas</li>
+    <li>Dicas práticas para sua saúde mental e finanças</li>
+    <li>Atualizações constantes de novos conteúdos</li>
+  </ul>
+
+  <img src="https://cdn.pixabay.com/photo/2016/04/01/09/49/brain-1301638_1280.png" alt="Clube da Mente">
+
+  <h2>Ganhe dinheiro com o Clube da Mente!</h2>
+  <p>Se você desejar, poderá se tornar um <strong>Afiliado</strong> e ganhar comissões indicando amigos. O sistema é de <strong>3 níveis</strong>, veja o exemplo:</p>
+
+  <img src="https://cdn.pixabay.com/photo/2017/01/31/21/23/team-2026079_1280.png" alt="Rede de Ganhos">
+
+  <h3>Exemplo de Ganhos:</h3>
+  <ul>
+    <li>Nível 1 → 40% do valor da assinatura de cada indicado direto</li>
+    <li>Nível 2 → 7% dos indicados do seu indicado</li>
+    <li>Nível 3 → 3% dos indicados do segundo nível</li>
+  </ul>
+
+  <h2>Simples assim:</h2>
+  <p>Quanto maior sua rede, maior seu ganho mensal!</p>
+
+  <h2>Quanto custa participar?</h2>
+  <p>Você paga apenas <strong>R$ 2,00 por semana</strong> (fase beta para testes).</p>
+  <p>Posteriormente será <strong>R$ 29,90 por mês</strong>.</p>
+
+  <a href="index.html" class="btn">Quero Me Cadastrar Agora</a>
 </div>
 
 <script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const ref = urlParams.get('ref');
-
-  const link = ref 
-    ? `/cadastro.html?indicador=${ref}`
-    : '/cadastro.html';
-
-  document.getElementById('btnCadastro').setAttribute('href', link);
+  const params = new URLSearchParams(window.location.search);
+  const convidador = params.get('ref') || 'Indicação Direta do Clube';
+  document.getElementById('convidador').innerText = convidador;
 </script>
 
 </body>
