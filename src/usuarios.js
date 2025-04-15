@@ -21,7 +21,9 @@ router.post('/cadastro', async (req, res) => {
       email,
       senha: senhaHash,
       indicadoPor: indicadoPor || null,
-      statusAssinatura: 'ativo'
+      statusAssinatura: 'ativo',
+      saldo: 0,
+      renovacaoAutomatica: false
     });
 
     await novoUsuario.save();
@@ -59,7 +61,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Verificar dados do usuário
+// Verificação
 router.post('/verificar', async (req, res) => {
   const { token } = req.body;
 
@@ -75,8 +77,10 @@ router.post('/verificar', async (req, res) => {
       email: usuario.email,
       saldo: usuario.saldo,
       statusAssinatura: usuario.statusAssinatura,
-      renovacaoAutomatica: usuario.renovacaoAutomatica
+      renovacaoAutomatica: usuario.renovacaoAutomatica,
+      valorAssinatura: 2
     });
+
   } catch (error) {
     res.status(401).json({ erro: 'Token inválido' });
   }
@@ -90,30 +94,34 @@ router.post('/renovar', async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const usuario = await Usuario.findById(decoded.id);
 
-    if (usuario.saldo < 2) return res.status(400).json({ mensagem: 'Saldo insuficiente para renovação.' });
+    if (usuario.saldo < 2) {
+      return res.status(400).json({ mensagem: 'Saldo insuficiente para renovar.' });
+    }
 
     usuario.saldo -= 2;
     usuario.statusAssinatura = 'ativo';
     await usuario.save();
 
     res.json({ mensagem: 'Assinatura renovada com sucesso!' });
+
   } catch (error) {
     res.status(401).json({ erro: 'Token inválido' });
   }
 });
 
-// Ativar ou desativar renovação automática
-router.post('/auto-renovacao', async (req, res) => {
-  const { token } = req.body;
+// Ativar / Desativar Renovação Automática
+router.post('/renovacao-automatica', async (req, res) => {
+  const { token, ativar } = req.body;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const usuario = await Usuario.findById(decoded.id);
 
-    usuario.renovacaoAutomatica = !usuario.renovacaoAutomatica;
+    usuario.renovacaoAutomatica = ativar;
     await usuario.save();
 
-    res.json({ mensagem: usuario.renovacaoAutomatica ? 'Renovação automática ativada.' : 'Renovação automática desativada.' });
+    res.json({ mensagem: ativar ? 'Renovação automática ativada!' : 'Renovação automática desativada!' });
+
   } catch (error) {
     res.status(401).json({ erro: 'Token inválido' });
   }
