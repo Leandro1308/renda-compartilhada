@@ -3,91 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bem-vindo ao Clube da Mente</title>
+  <title>Clube da Mente - Sua Liberdade Começa Aqui</title>
   <style>
     body {
+      background-color: #f7f7f7;
       font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
       margin: 0;
       padding: 0;
+      text-align: center;
     }
     .container {
       max-width: 900px;
       margin: auto;
       padding: 30px;
-      background: #fff;
-    }
-    h1, h2, h3 {
-      color: #2c3e50;
-    }
-    p {
-      line-height: 1.6;
     }
     img {
       max-width: 100%;
     }
+    h1 {
+      color: #2c3e50;
+    }
+    h2 {
+      color: #2980b9;
+    }
+    p {
+      font-size: 18px;
+      color: #555;
+      line-height: 1.6;
+    }
     .btn {
       display: inline-block;
       background-color: #27ae60;
-      color: white;
-      padding: 15px 25px;
-      border-radius: 5px;
-      text-decoration: none;
+      color: #fff;
+      padding: 15px 30px;
       margin-top: 20px;
-    }
-    .highlight {
-      color: #e74c3c;
-      font-weight: bold;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 20px;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
+  <img src="https://i.imgur.com/wZrP3Io.png" alt="Clube da Mente">
+
   <h1>Bem-vindo ao Clube da Mente!</h1>
 
-  <h2>Você foi convidado por: <span id="convidador" class="highlight">...</span></h2>
+  <h2>Você foi convidado por: <span id="afiliado"></span></h2>
 
-  <p>O <strong>Clube da Mente</strong> é um ambiente exclusivo com conteúdos de <strong>Saúde Mental, Desenvolvimento Pessoal e Educação Financeira</strong>.</p>
+  <p>O Clube da Mente é um projeto exclusivo que une Desenvolvimento Pessoal, Saúde Mental e Educação Financeira. Aqui você cresce mentalmente, emocionalmente e financeiramente.</p>
 
-  <h2>O que você terá acesso:</h2>
-  <ul>
-    <li>Cursos em Vídeo</li>
-    <li>Materiais em PDF</li>
-    <li>Links de Aulas Exclusivas</li>
-    <li>Dicas práticas para sua saúde mental e finanças</li>
-    <li>Atualizações constantes de novos conteúdos</li>
-  </ul>
+  <h2>O que você ganha sendo membro?</h2>
+  <p>✔ Acesso a cursos de saúde mental, inteligência emocional e educação financeira<br>
+  ✔ Participa de uma comunidade que ajuda você a crescer<br>
+  ✔ Pode se tornar um afiliado e ganhar comissões indicando amigos</p>
 
-  <img src="https://cdn.pixabay.com/photo/2016/04/01/09/49/brain-1301638_1280.png" alt="Clube da Mente">
+  <img src="https://i.imgur.com/09V4H9I.png" alt="Ganhos 3 Níveis">
 
-  <h2>Ganhe dinheiro com o Clube da Mente!</h2>
-  <p>Se você desejar, poderá se tornar um <strong>Afiliado</strong> e ganhar comissões indicando amigos. O sistema é de <strong>3 níveis</strong>, veja o exemplo:</p>
-
-  <img src="https://cdn.pixabay.com/photo/2017/01/31/21/23/team-2026079_1280.png" alt="Rede de Ganhos">
+  <h2>Como funciona os ganhos em 3 níveis?</h2>
+  <p>Você ganha comissão sempre que indicar alguém. E também ganha pelas indicações das suas indicações!</p>
 
   <h3>Exemplo de Ganhos:</h3>
-  <ul>
-    <li>Nível 1 → 40% do valor da assinatura de cada indicado direto</li>
-    <li>Nível 2 → 7% dos indicados do seu indicado</li>
-    <li>Nível 3 → 3% dos indicados do segundo nível</li>
-  </ul>
+  <p>Nível 1 - 40% sobre cada indicado direto<br>
+     Nível 2 - 7% sobre indicados indiretos<br>
+     Nível 3 - 3% sobre os indicados do seu time</p>
 
-  <h2>Simples assim:</h2>
-  <p>Quanto maior sua rede, maior seu ganho mensal!</p>
-
-  <h2>Quanto custa participar?</h2>
-  <p>Você paga apenas <strong>R$ 2,00 por semana</strong> (fase beta para testes).</p>
-  <p>Posteriormente será <strong>R$ 29,90 por mês</strong>.</p>
-
-  <a href="index.html" class="btn">Quero Me Cadastrar Agora</a>
-</div>
-
-<script>
-  const params = new URLSearchParams(window.location.search);
-  const convidador = params.get('ref') || 'Indicação Direta do Clube';
-  document.getElementById('convidador').innerText = convidador;
-</script>
-
-</body>
-</html>
+  <h2
