@@ -127,4 +127,67 @@ router.post('/renovacao-automatica', async (req, res) => {
   }
 });
 
+
+// =========================
+// ROTAS ADMINISTRATIVAS
+// =========================
+
+// Listar todos os usuários
+router.get('/', async (req, res) => {
+  try {
+    const usuarios = await Usuario.find();
+    res.json(usuarios);
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao listar usuários' });
+  }
+});
+
+// Alterar status da assinatura
+router.post('/status', async (req, res) => {
+  const { id, status } = req.body;
+  try {
+    const usuario = await Usuario.findById(id);
+    if (!usuario) return res.status(404).json({ erro: 'Usuário não encontrado' });
+
+    usuario.statusAssinatura = status;
+    await usuario.save();
+    res.json({ mensagem: 'Status atualizado com sucesso' });
+
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao atualizar status' });
+  }
+});
+
+// Ativar ou desativar renovação automática (manual pelo admin)
+router.post('/forcar-renovacao-auto', async (req, res) => {
+  const { id, ativar } = req.body;
+  try {
+    const usuario = await Usuario.findById(id);
+    if (!usuario) return res.status(404).json({ erro: 'Usuário não encontrado' });
+
+    usuario.renovacaoAutomatica = ativar;
+    await usuario.save();
+    res.json({ mensagem: `Renovação automática ${ativar ? 'ativada' : 'desativada'} com sucesso.` });
+
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao alterar renovação automática' });
+  }
+});
+
+// Resetar saldo para 0
+router.post('/resetar-saldo', async (req, res) => {
+  const { id } = req.body;
+  try {
+    const usuario = await Usuario.findById(id);
+    if (!usuario) return res.status(404).json({ erro: 'Usuário não encontrado' });
+
+    usuario.saldo = 0;
+    await usuario.save();
+    res.json({ mensagem: 'Saldo resetado com sucesso!' });
+
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao resetar saldo' });
+  }
+});
+
 module.exports = router;
